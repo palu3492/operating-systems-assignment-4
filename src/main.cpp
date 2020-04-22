@@ -4,6 +4,7 @@
 #include "pagetable.h"
 
 void printStartMessage(int page_size);
+void create(Mmu mmu, int text_size, int data_size);
 
 int main(int argc, char **argv) {
     // Ensure user specified page size as a command line parameter
@@ -39,10 +40,12 @@ int main(int argc, char **argv) {
         // Handle command
         // New function to handle each command
         // TODO: need to get command by splitting on space
+        std::count << "Command: " << command << std::endl;
         switch (command) {
             case "create":
-                create();
+                create(mmu, 10, 10);
                 break;
+            /* TODO:
             case "allocate":
                 allocate();
                 break;
@@ -58,6 +61,7 @@ int main(int argc, char **argv) {
             case "print":
                 print();
                 break;
+            */
             default:
                 std::cout << command << " is not a valid command." << std::endl;
         }
@@ -107,7 +111,8 @@ void printStartMessage(int page_size) {
  * > create 5992 564
  * return: 1024
  */
-int create() {
-    int process_pid = 1024;
-    return process_pid;
+void create(Mmu mmu, int text_size, int data_size) {
+    // Create process and get returned the pid
+    int process_pid = createProcess(); // starts at 1024
+    std::count << process_pid << std::endl;
 }
