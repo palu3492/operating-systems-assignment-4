@@ -29,7 +29,9 @@ int main(int argc, char **argv) {
 
     // Create MMU
     // MMU memory size is 67108864 bytes
-    Mmu mmu = new Mmu(67108864);
+    Mmu mmu = Mmu(67108864, page_size, memory);
+    // Does mmu hold this? Is it created in mmu constructor?
+    PageTable pageTable = PageTable(page_size);
 
     // Prompt loop
     // Your simulator should continually ask the user to input a command.
@@ -40,30 +42,18 @@ int main(int argc, char **argv) {
         // Handle command
         // New function to handle each command
         // TODO: need to get command by splitting on space
-        std::count << "Command: " << command << std::endl;
-        switch (command) {
-            case "create":
-                create(mmu, 10, 10);
-                break;
-            /* TODO:
-            case "allocate":
-                allocate();
-                break;
-            case "set":
-                set();
-                break;
-            case "free": // (To Earn a B or A)
-                free();
-                break;
-            case "terminate": // (To Earn a B or A)
-                terminate();
-                break;
-            case "print":
-                print();
-                break;
-            */
-            default:
-                std::cout << command << " is not a valid command." << std::endl;
+        std::cout << "Command: " << command << std::endl;
+
+        if(command == "create"){
+            create(mmu, 2048, 1024);
+        } else if (false){
+            // allocate
+            // set
+            // free
+            // terminate
+            // print
+        } else {
+            std::cout << command << " is not a valid command." << std::endl;
         }
 
         // Get next command
@@ -112,7 +102,11 @@ void printStartMessage(int page_size) {
  * return: 1024
  */
 void create(Mmu mmu, int text_size, int data_size) {
+    /* TODO:
+     * text_size needs to be between 2048 and 16384
+     * data_size needs to be between 0 and 1024
+    */
     // Create process and get returned the pid
-    int process_pid = createProcess(); // starts at 1024
-    std::count << process_pid << std::endl;
+    int process_pid = mmu.createProcess(text_size, data_size); // starts at 1024
+    std::cout << process_pid << std::endl;
 }
