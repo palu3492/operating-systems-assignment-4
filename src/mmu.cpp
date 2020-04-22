@@ -8,6 +8,7 @@ Mmu::Mmu(int memory_size)
 
 Mmu::~Mmu()
 {
+    // destructor
 }
 
 uint32_t Mmu::createProcess()
