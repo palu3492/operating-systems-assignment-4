@@ -17,7 +17,7 @@ void PageTable::addEntry(uint32_t pid, int page_number)
     // Find free frame
     // Start at 0 and increment up until a free frame is found
     int frame = 0;
-    for(i = 0; i <= _frames.size(); i++){
+    for(int i = 0; i <= _frames.size(); i++){
         // check if there is an empty frame in _frames
         // if i is equal to size of _frames then all _frames were checked
         // so use the frame that follows last frame
@@ -27,7 +27,8 @@ void PageTable::addEntry(uint32_t pid, int page_number)
         }
         frame++;
     }
-    _frames[_frames.size()] = frame;
+    std::cout << "frame: " << frame << std::endl;
+    _frames.push_back(frame);
     _table[entry] = frame;
 }
 

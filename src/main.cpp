@@ -4,7 +4,7 @@
 #include "pagetable.h"
 
 void printStartMessage(int page_size);
-void create(Mmu mmu, int text_size, int data_size);
+void create(Mmu mmu, int text_size, int data_size, PageTable pageTable, int page_size);
 
 int main(int argc, char **argv) {
     // Ensure user specified page size as a command line parameter
@@ -116,6 +116,8 @@ void create(Mmu mmu, int text_size, int data_size, PageTable pageTable, int page
     int total_size = stack_size + text_size + data_size;
     // number of pages needed to fit all of total_size
     int number_of_pages = total_size / page_size; // integer division
+    std::cout << "setup memory size: " << total_size << std::endl;
+    std::cout << "number of pages: " << number_of_pages << std::endl;
     // add a new page for each page needed to fit total_size
     for(int page_number = 0; page_number < number_of_pages; page_number++){
         pageTable.addEntry(process_pid, page_number);
