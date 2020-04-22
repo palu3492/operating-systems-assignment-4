@@ -1,5 +1,5 @@
 #include "pagetable.h"
-// starter code is "nowhere near complete"
+
 PageTable::PageTable(int page_size)
 {
     _page_size = page_size;
@@ -15,8 +15,19 @@ void PageTable::addEntry(uint32_t pid, int page_number)
     std::string entry = std::to_string(pid) + "|" + std::to_string(page_number);
 
     // Find free frame
-    // TODO: implement this!
-    int frame = 0; 
+    // Start at 0 and increment up until a free frame is found
+    int frame = 0;
+    for(i = 0; i <= _frames.size(); i++){
+        // check if there is an empty frame in _frames
+        // if i is equal to size of _frames then all _frames were checked
+        // so use the frame that follows last frame
+        if(i == _frames.size() || frame != _frames[i]){
+            // found free frame
+            break;
+        }
+        frame++;
+    }
+    _frames[_frames.size()] = frame;
     _table[entry] = frame;
 }
 

@@ -22,12 +22,9 @@ private:
     uint32_t _next_pid;
     int _max_size;
     std::vector<Process*> _processes;
-    int _page_size;
-    uint8_t *_memory;
-
 
 public:
-    Mmu(int memory_size, int page_size, uint8_t *memory );
+    Mmu(int memory_size);
     ~Mmu();
 
     uint32_t createProcess(int text_size, int data_size);

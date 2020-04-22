@@ -1,11 +1,9 @@
 #include "mmu.h"
-// starter code is "nowhere near complete"
-Mmu::Mmu(int memory_size, int page_size, uint8_t *memory)
+
+Mmu::Mmu(int memory_size)
 {
     _next_pid = 1024;
     _max_size = memory_size;
-    _page_size = page_size;
-    _memory = memory;
 }
 
 Mmu::~Mmu()
@@ -17,12 +15,6 @@ uint32_t Mmu::createProcess(int text_size, int data_size)
 {
     Process *proc = new Process();
     proc->pid = _next_pid; // Assign a PID
-
-    // TODO: Allocate some amount of startup memory for the process
-    // use parameters, stack is 65536 bytes
-    int stack_size = 65536;
-    // so just make an array of size text_size + data_size + stack_size ?
-
 
     // Why is this created?
     Variable *var = new Variable();

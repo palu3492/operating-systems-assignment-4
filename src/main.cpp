@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
 
     // Create MMU
     // MMU memory size is 67108864 bytes
-    Mmu mmu = Mmu(67108864, page_size, memory);
+    Mmu mmu = Mmu(67108864);
     // Does mmu hold this? Is it created in mmu constructor?
     PageTable pageTable = PageTable(page_size);
 
@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
         std::cout << "Command: " << command << std::endl;
 
         if(command == "create"){
-            create(mmu, 2048, 1024);
+            create(mmu, 2048, 1024, pageTable, page_size);
         } else if (false){
             // allocate
             // set
@@ -101,12 +101,23 @@ void printStartMessage(int page_size) {
  * > create 5992 564
  * return: 1024
  */
-void create(Mmu mmu, int text_size, int data_size) {
+void create(Mmu mmu, int text_size, int data_size, PageTable pageTable, int page_size) {
     /* TODO:
      * text_size needs to be between 2048 and 16384
      * data_size needs to be between 0 and 1024
     */
+
     // Create process and get returned the pid
     int process_pid = mmu.createProcess(text_size, data_size); // starts at 1024
-    std::cout << process_pid << std::endl;
+    std::cout << "pid: " << process_pid << std::endl;
+
+    // Allocate some amount of startup memory for the process
+    int stack_size = 65536; // Stack is constant 65536 bytes
+    int total_size = stack_size + text_size + data_size;
+    // number of pages needed to fit all of total_size
+    int number_of_pages = total_size / page_size; // integer division
+    // add a new page for each page needed to fit total_size
+    for(int page_number = 0; page_number < number_of_pages; page_number++){
+        pageTable.addEntry(process_pid, page_number);
+    }
 }
