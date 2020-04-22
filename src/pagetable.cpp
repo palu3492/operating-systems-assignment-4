@@ -1,4 +1,5 @@
 #include "pagetable.h"
+#include <algorithm>
 
 PageTable::PageTable(int page_size)
 {
@@ -17,6 +18,8 @@ void PageTable::addEntry(uint32_t pid, int page_number)
     // Find free frame
     // Start at 0 and increment up until a free frame is found
     int frame = 0;
+    sort(_frames.begin(), _frames.end()); // sort _frames from smallest to largest
+    std::cout << "existing number of frames: " << _frames.size() << std::endl;
     for(int i = 0; i <= _frames.size(); i++){
         // check if there is an empty frame in _frames
         // if i is equal to size of _frames then all _frames were checked
@@ -25,6 +28,7 @@ void PageTable::addEntry(uint32_t pid, int page_number)
             // found free frame
             break;
         }
+        std::cout << "frame checked: " << _frames[i] << std::endl;
         frame++;
     }
     std::cout << "frame: " << frame << std::endl;

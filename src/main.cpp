@@ -4,7 +4,7 @@
 #include "pagetable.h"
 
 void printStartMessage(int page_size);
-void create(Mmu mmu, int text_size, int data_size, PageTable pageTable, int page_size);
+void create(Mmu *mmu, int text_size, int data_size, PageTable *pageTable, int page_size);
 
 int main(int argc, char **argv) {
     // Ensure user specified page size as a command line parameter
@@ -29,9 +29,9 @@ int main(int argc, char **argv) {
 
     // Create MMU
     // MMU memory size is 67108864 bytes
-    Mmu mmu = Mmu(67108864);
-    // Does mmu hold this? Is it created in mmu constructor?
-    PageTable pageTable = PageTable(page_size);
+    Mmu *mmu = new Mmu(67108864);
+
+    PageTable *pageTable = new PageTable(page_size);
 
     // Prompt loop
     // Your simulator should continually ask the user to input a command.
@@ -101,14 +101,14 @@ void printStartMessage(int page_size) {
  * > create 5992 564
  * return: 1024
  */
-void create(Mmu mmu, int text_size, int data_size, PageTable pageTable, int page_size) {
+void create(Mmu *mmu, int text_size, int data_size, PageTable *pageTable, int page_size) {
     /* TODO:
      * text_size needs to be between 2048 and 16384
      * data_size needs to be between 0 and 1024
     */
 
     // Create process and get returned the pid
-    int process_pid = mmu.createProcess(text_size, data_size); // starts at 1024
+    int process_pid = mmu->createProcess(text_size, data_size); // starts at 1024
     std::cout << "pid: " << process_pid << std::endl;
 
     // Allocate some amount of startup memory for the process
@@ -120,6 +120,6 @@ void create(Mmu mmu, int text_size, int data_size, PageTable pageTable, int page
     std::cout << "number of pages: " << number_of_pages << std::endl;
     // add a new page for each page needed to fit total_size
     for(int page_number = 0; page_number < number_of_pages; page_number++){
-        pageTable.addEntry(process_pid, page_number);
+        pageTable->addEntry(process_pid, page_number);
     }
 }
