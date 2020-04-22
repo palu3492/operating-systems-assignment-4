@@ -1,10 +1,11 @@
 #ifndef __MMU_H_
-#define __MMU_H_
+#define __MMU_H_ // only import once
 
 #include <iostream>
 #include <string>
 #include <vector>
 
+// "Might want to add type"
 typedef struct Variable {
     std::string name;
     int virtual_address;

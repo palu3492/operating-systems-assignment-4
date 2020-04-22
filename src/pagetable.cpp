@@ -1,5 +1,5 @@
 #include "pagetable.h"
-
+// starter code is "nowhere near complete"
 PageTable::PageTable(int page_size)
 {
     _page_size = page_size;

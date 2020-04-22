@@ -8,26 +8,40 @@ void printStartMessage(int page_size);
 int main(int argc, char **argv)
 {
     // Ensure user specified page size as a command line parameter
+    // ./memsim 1024
     if (argc < 2)
     {
         fprintf(stderr, "Error: you must specify the page size\n");
         return 1;
     }
 
-    // Print opening instuction message
-    int page_size = std::stoi(argv[1]);
+    // Print opening instruction message
+    // page size must be a power of 2 (between 1024 and 32768)
+    int page_size = std::stoi(argv[1]); // 1024 - 32768
     printStartMessage(page_size);
 
     // Create physical 'memory'
+    // You will not actually be spawning processes that consume memory.
+    // Rather you will be creating simulated "processes" that each make
+    // a series of memory allocations and deallocations.
     uint8_t *memory = new uint8_t[67108864]; // 64 MB (64 * 1024 * 1024)
 
     // Prompt loop
+    // Your simulator should continually ask the user to input a command.
     std::string command;
     std::cout << "> ";
     std::getline (std::cin, command);
     while (command != "exit") {
         // Handle command
+        // New function to handle each command
         // TODO: implement this!
+
+        // create
+        // allocate
+        // set
+        // free (To Earn a B or A)
+        // terminate (To Earn a B or A)
+        // print
 
         // Get next command
         std::cout << "> ";
