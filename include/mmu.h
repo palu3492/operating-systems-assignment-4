@@ -22,6 +22,7 @@ private:
     uint32_t _next_pid;
     int _max_size;
     std::vector<Process*> _processes;
+    Variable* Mmu::createVariable(std::string name, address);
 
 public:
     Mmu(int memory_size);

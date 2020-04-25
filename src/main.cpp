@@ -16,9 +16,9 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-
     // page size must be a power of 2 between 1024 and 32768
     int page_size = std::stoi(argv[1]); // 1024 - 32768
+
     // check if power of 2 and between 1024 and 32768
     // log2(page_size) will be an integer if it is a power of 2
     if(log2(page_size) != int(log2(page_size)) || page_size < 1024 || page_size > 32768) {
@@ -37,22 +37,27 @@ int main(int argc, char **argv) {
     uint8_t *memory = new uint8_t[67108864]; // 64 MB (64 * 1024 * 1024)
 
     // Create MMU
-    // MMU memory size is 67108864 bytes
+    // MMU memory size is 67108864 bytes (how much memory we have)
     Mmu *mmu = new Mmu(67108864);
 
+    // Create page table using supplied page_size
     PageTable *pageTable = new PageTable(page_size);
 
     // Prompt loop
     // Your simulator should continually ask the user to input a command.
     std::string command; // create, allocate, set, free, terminate, print
     std::cout << "> ";
-    std::getline(std::cin, command);
+    std::getline(std::cin, command); // get line typed and store as command
+
+    // while the user doesn't type 'exit' command, keep asking for commands
     while (command != "exit") {
-        // Handle command
-        // New function to handle each command
+        // Handle commands
+
         // TODO: need to get command by splitting on space
         std::cout << "Command: " << command << std::endl;
 
+        // New function to handle each command
+        // using constant values for testing
         if(command == "create"){
             // create <text_size> <data_size>
             int text_size = 2048;
@@ -122,9 +127,9 @@ void create(int text_size, int data_size, Mmu *mmu, PageTable *pageTable, int pa
      * data_size needs to be between 0 and 1024
     */
 
-    // Create process and get returned the pid
-    int process_pid = mmu->createProcess(text_size, data_size); // pid starts at 1024
-    std::cout << "pid: " << process_pid << std::endl;
+    // Create process, and add text, size, and stack variables to it and get returned the pid
+    int pid = mmu->createProcess(text_size, data_size); // pid starts at 1024
+    std::cout << "pid: " << pid << std::endl;
 
     // Allocate some amount of startup memory for the process
     int stack_size = 65536; // Stack is constant 65536 bytes
@@ -135,7 +140,7 @@ void create(int text_size, int data_size, Mmu *mmu, PageTable *pageTable, int pa
     std::cout << "number of pages: " << number_of_pages << std::endl;
     // add a new page for each page needed to fit total_size
     for(int page_number = 0; page_number < number_of_pages; page_number++){
-        pageTable->addEntry(process_pid, page_number);
+        pageTable->addEntry(pid, page_number);
     }
 }
 /*
@@ -146,9 +151,30 @@ Allocate memory on the heap
   - N longs / doubles (N * 8 bytes)
 
 allocate <PID> <var_name> <data_type> <number_of_elements>
-        Allocated memory on the heap (how much depends on the data type and the number of elements)
+Allocated memory on the heap (how much depends on the data type and the number of elements)
 Print the virtual memory address
  */
 void allocate(int pid, std::string var_name, std::string data_type, int number_of_elements, Mmu *mmu, PageTable *pageTable, int page_size){
+    int number_of_bytes = number_of_elements;
+    // If 'char' then do nothing, else multiply by number of bytes for each data type
+    if(data_type == "short"){
+        number_of_bytes *= 2;
+    } else if(data_type == "int"){
+        number_of_bytes *= 4;
+    } else if(data_type == "long"){
+        number_of_bytes *= 8;
+    } else if (data_type != "char"){
+        // If data_type if not 'short', 'int', 'long', or 'char' print error
+        std::cout << data_type << " is not a valid data_type." << std::endl;
+        return;
+    }
+    std::cout << "number of bytes: " << number_of_bytes << std::endl;
 
+    // number of pages needed to fit number_of_bytes
+    int number_of_pages = total_size / number_of_bytes; // integer division
+    std::cout << "number of pages: " << number_of_pages << std::endl;
+    // add a new page for each page needed to fit total_size
+    for(int page_number = 0; page_number < number_of_pages; page_number++){
+        pageTable->addEntry(pid, page_number);
+    }
 }

@@ -16,17 +16,27 @@ uint32_t Mmu::createProcess(int text_size, int data_size)
     Process *proc = new Process();
     proc->pid = _next_pid; // Assign a PID
 
-    // Why is this created?
-    Variable *var = new Variable();
-    var->name = "<FREE_SPACE>";
-    var->virtual_address = 0;
-    var->size = _max_size;
+    // Create <TEXT>, <GLOBALS>, and <STACK> variables
+    Variable *var;
+    var = createVariable("<TEXT>", text_size, 0);
+    proc->variables.push_back(var);
+    var = createVariable("<GLOBALS>", data_size, text_size);
+    proc->variables.push_back(var);
+    var = createVariable("<STACK>", 65536, text_size+data_size);
     proc->variables.push_back(var);
 
     _processes.push_back(proc); // Push process onto back of processes Vector
 
     _next_pid++; // increment pid for next process
     return proc->pid;
+}
+
+Variable* Mmu::createVariable(std::string name, address){
+    Variable *var = new Variable();
+    var->name = name;
+    var->virtual_address = 0;
+    var->size = _max_size;
+    return var;
 }
 
 void Mmu::print()

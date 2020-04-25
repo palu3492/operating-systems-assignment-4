@@ -1,2 +1,7 @@
 
 .idea/
+
+questions.txt
+
+CMakeLists.txt
+cmake-build-debug/

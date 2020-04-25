@@ -25,7 +25,7 @@ void PageTable::addEntry(uint32_t pid, int page_number)
         // check if there is an empty frame in _frames
         // if i is equal to size of _frames then all _frames were checked
         // so use the frame that follows last frame
-        if(i == _frames.size() || frame != _frames[i]){
+        if(i == _frames.size() || frame != _frames[i]) {
             // found free frame
             break;
         }
