@@ -20,6 +20,7 @@ void PageTable::addEntry(uint32_t pid, int page_number)
     int frame = 0;
     sort(_frames.begin(), _frames.end()); // sort _frames from smallest to largest
     std::cout << "existing number of frames: " << _frames.size() << std::endl;
+    // Looks for hole in frames, if non then put at end
     for(int i = 0; i <= _frames.size(); i++){
         // check if there is an empty frame in _frames
         // if i is equal to size of _frames then all _frames were checked
@@ -32,8 +33,8 @@ void PageTable::addEntry(uint32_t pid, int page_number)
         frame++;
     }
     std::cout << "frame: " << frame << std::endl;
-    _frames.push_back(frame);
-    _table[entry] = frame;
+    _frames.push_back(frame); // store which frame is in use
+    _table[entry] = frame; // add frame to table
 }
 
 int PageTable::getPhysicalAddress(uint32_t pid, int virtual_address)
