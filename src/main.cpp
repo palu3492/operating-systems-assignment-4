@@ -171,10 +171,12 @@ void allocate(int pid, std::string var_name, std::string data_type, int number_o
     std::cout << "number of bytes: " << number_of_bytes << std::endl;
 
     // number of pages needed to fit number_of_bytes
+    /*
     int number_of_pages = total_size / number_of_bytes; // integer division
     std::cout << "number of pages: " << number_of_pages << std::endl;
     // add a new page for each page needed to fit total_size
     for(int page_number = 0; page_number < number_of_pages; page_number++){
         pageTable->addEntry(pid, page_number);
     }
+     */
 }

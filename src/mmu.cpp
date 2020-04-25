@@ -18,11 +18,11 @@ uint32_t Mmu::createProcess(int text_size, int data_size)
 
     // Create <TEXT>, <GLOBALS>, and <STACK> variables
     Variable *var;
-    var = createVariable("<TEXT>", text_size, 0);
+    var = createVariable("<TEXT>", 0, text_size);
     proc->variables.push_back(var);
-    var = createVariable("<GLOBALS>", data_size, text_size);
+    var = createVariable("<GLOBALS>", text_size, data_size);
     proc->variables.push_back(var);
-    var = createVariable("<STACK>", 65536, text_size+data_size);
+    var = createVariable("<STACK>", text_size+data_size, 65536);
     proc->variables.push_back(var);
 
     _processes.push_back(proc); // Push process onto back of processes Vector
@@ -31,11 +31,11 @@ uint32_t Mmu::createProcess(int text_size, int data_size)
     return proc->pid;
 }
 
-Variable* Mmu::createVariable(std::string name, address){
+Variable* Mmu::createVariable(std::string name, int address, int size){
     Variable *var = new Variable();
     var->name = name;
-    var->virtual_address = 0;
-    var->size = _max_size;
+    var->virtual_address = address;
+    var->size = size;
     return var;
 }
 
