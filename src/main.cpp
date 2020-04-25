@@ -7,6 +7,7 @@
 void printStartMessage(int page_size);
 void create(int text_size, int data_size, Mmu *mmu, PageTable *pageTable, int page_size);
 void allocate(int pid, std::string var_name, std::string data_type, int number_of_elements, Mmu *mmu, PageTable *pageTable, int page_size);
+void print(Mmu *mmu);
 
 int main(int argc, char **argv) {
     // Ensure user specified page size as a command line parameter
@@ -67,10 +68,11 @@ int main(int argc, char **argv) {
             // allocate <PID> <var_name> <data_type> <number_of_elements>
             allocate(1024, "var", "int", 10, mmu, pageTable, page_size);
 
-        } else if (command == "print") {
-            // only printing mmu for now
-            print(mmu);
-
+        // These prints should not be hard coded (testing)
+        } else if (command == "print mmu") {
+            mmu->print();
+        } else if (command == "print page") {
+            pageTable->print();
 
             // set
             // free
@@ -190,6 +192,7 @@ void allocate(int pid, std::string var_name, std::string data_type, int number_o
      */
 }
 
+// not using currently
 void print(Mmu *mmu){
     mmu->print();
 }

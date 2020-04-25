@@ -17,6 +17,7 @@ uint32_t Mmu::createProcess(int text_size, int data_size)
     proc->pid = _next_pid; // Assign a PID
 
     // Create <TEXT>, <GLOBALS>, and <STACK> variables
+    // Are we supposed to create <FREE_SPACE> here and create other 3 vars elsewhere?
     Variable *var;
     var = createVariable("<TEXT>", 0, text_size);
     proc->variables.push_back(var);
@@ -50,12 +51,14 @@ void Mmu::print()
         for (j = 0; j < _processes[i]->variables.size(); j++)
         {
             // TODO: print all variables (excluding <FREE_SPACE> entries)
-            Process *process =  _processes[i]->variables[j];
-            std::cout << _processes[i]->pid << " | ";
-            std::cout << _processes[i]->variables->name << " | ";
-            // TODO: Hex?
-            std::cout << _processes[i]->variables->virtual_address << " | ";
-            std::cout << _processes[i]->variables->size << std::endl;
+            std::string name = _processes[i]->variables[j]->name;
+            if(name != "<FREE_SPACE>"){
+                std::cout << " " << _processes[i]->pid << " | ";
+                std::cout << name << " | ";
+                // TODO: Hex?
+                std::cout << _processes[i]->variables[j]->virtual_address << " | ";
+                std::cout << _processes[i]->variables[j]->size << std::endl;
+            }
         }
     }
 }

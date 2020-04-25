@@ -67,5 +67,12 @@ void PageTable::print()
     for (it = _table.begin(); it != _table.end(); it++)
     {
         // TODO: print all pages
+
+        // TODO: this needs to be split
+        std::string key = it->first;
+        int frame = it->second;
+
+        std::cout << key << " | " << frame << std::endl;
+
     }
 }
