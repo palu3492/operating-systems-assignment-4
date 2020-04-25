@@ -67,6 +67,10 @@ int main(int argc, char **argv) {
             // allocate <PID> <var_name> <data_type> <number_of_elements>
             allocate(1024, "var", "int", 10, mmu, pageTable, page_size);
 
+        } else if (command == "print") {
+            // only printing mmu for now
+            print(mmu);
+
 
             // set
             // free
@@ -122,12 +126,17 @@ void printStartMessage(int page_size) {
  * return: 1024
  */
 void create(int text_size, int data_size, Mmu *mmu, PageTable *pageTable, int page_size) {
-    /* TODO:
-     * text_size needs to be between 2048 and 16384
-     * data_size needs to be between 0 and 1024
-    */
 
-    // Create process, and add text, size, and stack variables to it and get returned the pid
+    // text_size needs to be between 2048 and 16384
+    // data_size needs to be between 0 and 1024
+    // Print error if not
+    if(text_size < 2048 || text_size > 16384 || data_size < 0 || data_size > 1024){
+        std::cout << "Text/Code size needs to be between 2048 and 16384 bytes. ";
+        std::cout << "Data/Globals size needs to be between 0 and 1024 bytes. " << std::endl;
+        return;
+    }
+
+    // Create process, and add text, size, and stack variables to it, and get returned the pid
     int pid = mmu->createProcess(text_size, data_size); // pid starts at 1024
     std::cout << "pid: " << pid << std::endl;
 
@@ -179,4 +188,8 @@ void allocate(int pid, std::string var_name, std::string data_type, int number_o
         pageTable->addEntry(pid, page_number);
     }
      */
+}
+
+void print(Mmu *mmu){
+    mmu->print();
 }

@@ -50,6 +50,12 @@ void Mmu::print()
         for (j = 0; j < _processes[i]->variables.size(); j++)
         {
             // TODO: print all variables (excluding <FREE_SPACE> entries)
+            Process *process =  _processes[i]->variables[j];
+            std::cout << _processes[i]->pid << " | ";
+            std::cout << _processes[i]->variables->name << " | ";
+            // TODO: Hex?
+            std::cout << _processes[i]->variables->virtual_address << " | ";
+            std::cout << _processes[i]->variables->size << std::endl;
         }
     }
 }
