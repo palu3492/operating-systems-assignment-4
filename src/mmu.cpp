@@ -11,19 +11,11 @@ Mmu::~Mmu()
     // destructor
 }
 
-uint32_t Mmu::createProcess(int text_size, int data_size)
+uint32_t Mmu::createProcess()
 {
     Process *proc = new Process();
     proc->pid = _next_pid; // Assign a PID
     proc->end_of_memory = 0;
-
-    // Create <TEXT>, <GLOBALS>, and <STACK> variables
-    // Are we supposed to create <FREE_SPACE> here and create other 3 vars elsewhere?
-    // Could be done in main?
-    addVariableToProcess(pid, "<TEXT>", text_size);
-    addVariableToProcess(pid, "<GLOBALS>", data_size);
-    addVariableToProcess(pid, "<STACK>", 65536);
-
 
     _processes.push_back(proc); // Push process onto back of processes Vector
 
@@ -32,7 +24,7 @@ uint32_t Mmu::createProcess(int text_size, int data_size)
 }
 
 int Mmu::addVariableToProcess(int pid, std::string name, int size){
-    for (i = 0; i < _processes.size(); i++){
+    for (int i = 0; i < _processes.size(); i++){
         // find process that matches supplied pid
         if(_processes[i]->pid == pid){
             Variable *var;

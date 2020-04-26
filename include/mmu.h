@@ -31,7 +31,7 @@ public:
     Mmu(int memory_size);
     ~Mmu();
 
-    uint32_t createProcess(int text_size, int data_size);
+    uint32_t createProcess();
     int addVariableToProcess(int pid, std::string name, int size);
     void print();
 };

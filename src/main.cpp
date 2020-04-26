@@ -142,6 +142,11 @@ void create(int text_size, int data_size, Mmu *mmu, PageTable *pageTable, int pa
     int pid = mmu->createProcess(text_size, data_size); // pid starts at 1024
     std::cout << "pid: " << pid << std::endl;
 
+    // Create <TEXT>, <GLOBALS>, and <STACK> variables
+    mmu->addVariableToProcess(pid, "<TEXT>", text_size);
+    mmu->addVariableToProcess(pid, "<GLOBALS>", data_size);
+    mmu->addVariableToProcess(pid, "<STACK>", 65536);
+
     // Allocate some amount of startup memory for the process
     int stack_size = 65536; // Stack is constant 65536 bytes
     int total_size = stack_size + text_size + data_size;
