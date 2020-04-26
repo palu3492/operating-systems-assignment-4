@@ -139,7 +139,7 @@ void create(int text_size, int data_size, Mmu *mmu, PageTable *pageTable, int pa
     }
 
     // Create process, and add text, size, and stack variables to it, and get returned the pid
-    int pid = mmu->createProcess(text_size, data_size); // pid starts at 1024
+    int pid = mmu->createProcess(); // pid starts at 1024
     std::cout << "pid: " << pid << std::endl;
 
     // Create <TEXT>, <GLOBALS>, and <STACK> variables
