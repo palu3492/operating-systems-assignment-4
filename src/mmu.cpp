@@ -15,16 +15,15 @@ uint32_t Mmu::createProcess(int text_size, int data_size)
 {
     Process *proc = new Process();
     proc->pid = _next_pid; // Assign a PID
+    proc->end_of_memory = 0;
 
     // Create <TEXT>, <GLOBALS>, and <STACK> variables
     // Are we supposed to create <FREE_SPACE> here and create other 3 vars elsewhere?
-    Variable *var;
-    var = createVariable("<TEXT>", 0, text_size);
-    proc->variables.push_back(var);
-    var = createVariable("<GLOBALS>", text_size, data_size);
-    proc->variables.push_back(var);
-    var = createVariable("<STACK>", text_size+data_size, 65536);
-    proc->variables.push_back(var);
+    // Could be done in main?
+    addVariableToProcess(pid, "<TEXT>", text_size);
+    addVariableToProcess(pid, "<GLOBALS>", data_size);
+    addVariableToProcess(pid, "<STACK>", 65536);
+
 
     _processes.push_back(proc); // Push process onto back of processes Vector
 
@@ -32,10 +31,28 @@ uint32_t Mmu::createProcess(int text_size, int data_size)
     return proc->pid;
 }
 
+int Mmu::addVariableToProcess(int pid, std::string name, int size){
+    for (i = 0; i < _processes.size(); i++){
+        // find process that matches supplied pid
+        if(_processes[i]->pid == pid){
+            Variable *var;
+            // put var in virtual memory at last available byte
+            int virtual_address = _processes[i]->end_of_memory;
+            var = createVariable(name, virtual_address, size);
+            // last available byte will now change to be what it was plus the additional added memory
+            _processes[i]->end_of_memory += size;
+            _processes[i]->variables.push_back(var);
+
+            return virtual_address;
+        }
+    }
+}
+
 Variable* Mmu::createVariable(std::string name, int address, int size){
+    std::cout << name << " created at virtual address " << address << std::endl;
     Variable *var = new Variable();
     var->name = name;
-    var->virtual_address = address;
+    var->virtual_address = address; // is virtual address calculated here or passed in?
     var->size = size;
     return var;
 }

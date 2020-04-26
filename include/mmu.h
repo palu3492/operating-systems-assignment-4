@@ -15,6 +15,9 @@ typedef struct Variable {
 typedef struct Process {
     uint32_t pid;
     std::vector<Variable*> variables;
+    // the last byte of used virtual memory taken up by variables
+    // start at 0
+    int end_of_memory;
 } Process;
 
 class Mmu {
@@ -29,6 +32,7 @@ public:
     ~Mmu();
 
     uint32_t createProcess(int text_size, int data_size);
+    int addVariableToProcess(int pid, std::string name, int size);
     void print();
 };
 

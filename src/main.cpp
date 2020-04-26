@@ -74,10 +74,10 @@ int main(int argc, char **argv) {
         } else if (command == "print page") {
             pageTable->print();
 
+            // Other commands still needed:
             // set
             // free
             // terminate
-            // print
         } else {
             std::cout << command << " is not a valid command." << std::endl;
         }
@@ -154,6 +154,7 @@ void create(int text_size, int data_size, Mmu *mmu, PageTable *pageTable, int pa
         pageTable->addEntry(pid, page_number);
     }
 }
+
 /*
 Allocate memory on the heap
   - N chars (N bytes)
@@ -180,6 +181,9 @@ void allocate(int pid, std::string var_name, std::string data_type, int number_o
         return;
     }
     std::cout << "number of bytes: " << number_of_bytes << std::endl;
+
+    int var_virtual_address = mmu->addVariableToProcess(pid, var_name, number_of_bytes);
+    std::cout << var_virtual_address << std::endl;
 
     // number of pages needed to fit number_of_bytes
     /*
