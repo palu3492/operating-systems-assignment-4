@@ -4,6 +4,7 @@ Mmu::Mmu(int memory_size)
 {
     _next_pid = 1024;
     _max_size = memory_size;
+    proc->end_of_memory = 0;
 }
 
 Mmu::~Mmu()
@@ -15,7 +16,6 @@ uint32_t Mmu::createProcess()
 {
     Process *proc = new Process();
     proc->pid = _next_pid; // Assign a PID
-    proc->end_of_memory = 0;
 
     _processes.push_back(proc); // Push process onto back of processes Vector
 
@@ -47,6 +47,13 @@ Variable* Mmu::createVariable(std::string name, int address, int size){
     var->virtual_address = address; // is virtual address calculated here or passed in?
     var->size = size;
     return var;
+}
+
+std::vector<Variable*> Mmu::getVariablesFromProcess(int pid){
+    for (int i = 0; i < _processes.size(); i++){
+        if(_processes[i]->pid == pid){
+            return _processes[i]->variables;
+        }
 }
 
 void Mmu::print()

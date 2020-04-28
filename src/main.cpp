@@ -7,6 +7,7 @@
 void printStartMessage(int page_size);
 void create(int text_size, int data_size, Mmu *mmu, PageTable *pageTable, int page_size);
 void allocate(int pid, std::string var_name, std::string data_type, int number_of_elements, Mmu *mmu, PageTable *pageTable, int page_size);
+void set(int pid, std::string var_name, int offset, int *values, Mmu *mmu, PageTable *pageTable, int page_size);
 void print(Mmu *mmu);
 
 int main(int argc, char **argv) {
@@ -66,9 +67,11 @@ int main(int argc, char **argv) {
             create(text_size, data_size, mmu, pageTable, page_size);
         } else if (command == "allocate") {
             // allocate <PID> <var_name> <data_type> <number_of_elements>
-            allocate(1024, "var", "int", 10, mmu, pageTable, page_size);
-
-        // These prints should not be hard coded (testing)
+            allocate(1024, "var1", "int", 10, mmu, pageTable, page_size);
+        } else if (command == "set") {
+            // set <PID> <var_name> <offset> <value_0> <value_1> <value_2> ... <value_N>
+            int values[10] = {1,2,3,4,5,6,7,8,9};
+            set(1024, "var1", 0, values, mmu, pageTable, page_size);
         } else if (command == "print mmu") {
             mmu->print();
         } else if (command == "print page") {
@@ -137,16 +140,22 @@ void create(int text_size, int data_size, Mmu *mmu, PageTable *pageTable, int pa
         std::cout << "Data/Globals size needs to be between 0 and 1024 bytes. " << std::endl;
         return;
     }
+    int stack_size = 65536; // Stack is constant 65536 bytes
 
-    // Create process, and add text, size, and stack variables to it, and get returned the pid
+    // Create process and get returned the pid (process id)
     int pid = mmu->createProcess(); // pid starts at 1024
     std::cout << "pid: " << pid << std::endl;
 
     // Create <TEXT>, <GLOBALS>, and <STACK> variables
     mmu->addVariableToProcess(pid, "<TEXT>", text_size);
     mmu->addVariableToProcess(pid, "<GLOBALS>", data_size);
-    mmu->addVariableToProcess(pid, "<STACK>", 65536);
+    mmu->addVariableToProcess(pid, "<STACK>", stack_size);
 
+
+}
+
+/*
+void createPagesForProcess(int pid, Mmu *mmu, PageTable *pageTable){
     // Allocate some amount of startup memory for the process
     int stack_size = 65536; // Stack is constant 65536 bytes
     int total_size = stack_size + text_size + data_size;
@@ -158,7 +167,24 @@ void create(int text_size, int data_size, Mmu *mmu, PageTable *pageTable, int pa
     for(int page_number = 0; page_number < number_of_pages; page_number++){
         pageTable->addEntry(pid, page_number);
     }
+
+    std::map<std::string, int> _table;
+    mmu
+    pageTable->map
+    std::map<std::string, int> _table;
+
+    std::vector<Variable*> variables = mmu->getVariablesFromProcess(pid);
+    // loop over variables and calculate number of pages needed
+    // replace pages in page table with newly calculated pages
+    int page_number = 0;
+    int total_size = 0;
+    int page_size = 0;
+    for (int i = 0; j < variables.size(); i++){
+        variables[i]->size;
+    }
+
 }
+*/
 
 /*
 Allocate memory on the heap
@@ -199,6 +225,11 @@ void allocate(int pid, std::string var_name, std::string data_type, int number_o
         pageTable->addEntry(pid, page_number);
     }
      */
+}
+
+void set(int pid, std::string var_name, int offset, int *values, Mmu *mmu, PageTable *pageTable, int page_size){
+    for(int i = 0; i < 10; i++){
+    }
 }
 
 // not using currently

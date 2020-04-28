@@ -9,6 +9,7 @@
 class PageTable {
 private:
     int _page_size;
+    // <"pid|page_number", frame>
     std::map<std::string, int> _table;
     std::vector<int> _frames;
 
