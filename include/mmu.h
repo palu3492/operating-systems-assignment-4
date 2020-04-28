@@ -18,6 +18,7 @@ typedef struct Process {
     // the last byte of used virtual memory taken up by variables
     // start at 0
     int end_of_memory;
+    int last_page;
 } Process;
 
 class Mmu {
@@ -35,6 +36,7 @@ public:
     int addVariableToProcess(int pid, std::string name, int size);
     std::vector<Variable*> getVariablesFromProcess(int pid);
     void print();
+    void printProcesses();
 };
 
 #endif // __MMU_H_

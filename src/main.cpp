@@ -5,11 +5,21 @@
 #include <cmath>
 
 void printStartMessage(int page_size);
-void create(int text_size, int data_size, Mmu *mmu, PageTable *pageTable, int page_size);
-void allocate(int pid, std::string var_name, std::string data_type, int number_of_elements, Mmu *mmu, PageTable *pageTable, int page_size);
-void set(int pid, std::string var_name, int offset, int *values, Mmu *mmu, PageTable *pageTable, int page_size);
-void print(Mmu *mmu);
 
+void create(int text_size, int data_size, Mmu *mmu, PageTable *pageTable, int page_size);
+
+void allocate(int pid, std::string var_name, std::string data_type, int number_of_elements, Mmu *mmu,
+        PageTable *pageTable, int page_size);
+
+void set(int pid, std::string var_name, int offset, int *values, Mmu *mmu, PageTable *pageTable, int page_size);
+
+// void print(Mmu *mmu);
+
+/*
+You will not actually be spawning processes that consume memory.
+Rather you will be creating simulated "processes" that each make
+a series of memory allocations and deallocations.
+*/
 int main(int argc, char **argv) {
     // Ensure user specified page size as a command line parameter
     // ./memsim 1024
@@ -18,12 +28,12 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    // page size must be a power of 2 between 1024 and 32768
+    // byte per page, also frame size
     int page_size = std::stoi(argv[1]); // 1024 - 32768
 
     // check if power of 2 and between 1024 and 32768
     // log2(page_size) will be an integer if it is a power of 2
-    if(log2(page_size) != int(log2(page_size)) || page_size < 1024 || page_size > 32768) {
+    if (log2(page_size) != int(log2(page_size)) || page_size < 1024 || page_size > 32768) {
         fprintf(stderr, "Error: page size must be a power of 2 between 1024 and 32768\n");
         return 1;
     }
@@ -32,10 +42,7 @@ int main(int argc, char **argv) {
     printStartMessage(page_size);
 
     // Create physical 'memory'
-    // You will not actually be spawning processes that consume memory.
-    // Rather you will be creating simulated "processes" that each make
-    // a series of memory allocations and deallocations.
-    // Array of unsigned ints (bytes)
+    // Array of unsigned ints (8-bit ints, bytes)
     uint8_t *memory = new uint8_t[67108864]; // 64 MB (64 * 1024 * 1024)
 
     // Create MMU
@@ -60,7 +67,7 @@ int main(int argc, char **argv) {
 
         // New function to handle each command
         // using constant values for testing
-        if(command == "create"){
+        if (command == "create") {
             // create <text_size> <data_size>
             int text_size = 2048;
             int data_size = 1024;
@@ -70,12 +77,14 @@ int main(int argc, char **argv) {
             allocate(1024, "var1", "int", 10, mmu, pageTable, page_size);
         } else if (command == "set") {
             // set <PID> <var_name> <offset> <value_0> <value_1> <value_2> ... <value_N>
-            int values[10] = {1,2,3,4,5,6,7,8,9};
+            int values[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
             set(1024, "var1", 0, values, mmu, pageTable, page_size);
         } else if (command == "print mmu") {
             mmu->print();
         } else if (command == "print page") {
             pageTable->print();
+        } else if (command == "print processes") {
+            mmu->printProcesses();
 
             // Other commands still needed:
             // set
@@ -135,7 +144,7 @@ void create(int text_size, int data_size, Mmu *mmu, PageTable *pageTable, int pa
     // text_size needs to be between 2048 and 16384
     // data_size needs to be between 0 and 1024
     // Print error if not
-    if(text_size < 2048 || text_size > 16384 || data_size < 0 || data_size > 1024){
+    if (text_size < 2048 || text_size > 16384 || data_size < 0 || data_size > 1024) {
         std::cout << "Text/Code size needs to be between 2048 and 16384 bytes. ";
         std::cout << "Data/Globals size needs to be between 0 and 1024 bytes. " << std::endl;
         return;
@@ -197,17 +206,17 @@ allocate <PID> <var_name> <data_type> <number_of_elements>
 Allocated memory on the heap (how much depends on the data type and the number of elements)
 Print the virtual memory address
  */
-void allocate(int pid, std::string var_name, std::string data_type, int number_of_elements, Mmu *mmu, PageTable *pageTable, int page_size){
+void allocate(int pid, std::string var_name, std::string data_type, int number_of_elements, Mmu *mmu, PageTable *pageTable, int page_size) {
     int number_of_bytes = number_of_elements;
     // If 'char' then do nothing, else multiply by number of bytes for each data type
-    if(data_type == "short"){
+    if (data_type == "short") {
         number_of_bytes *= 2;
-    } else if(data_type == "int"){
+    } else if (data_type == "int") {
         number_of_bytes *= 4;
-    } else if(data_type == "long"){
+    } else if (data_type == "long") {
         number_of_bytes *= 8;
-    } else if (data_type != "char"){
-        // If data_type if not 'short', 'int', 'long', or 'char' print error
+    } else if (data_type != "char") {
+        // If data_type is not 'short', 'int', 'long', or 'char' print error
         std::cout << data_type << " is not a valid data_type." << std::endl;
         return;
     }
@@ -227,12 +236,16 @@ void allocate(int pid, std::string var_name, std::string data_type, int number_o
      */
 }
 
-void set(int pid, std::string var_name, int offset, int *values, Mmu *mmu, PageTable *pageTable, int page_size){
-    for(int i = 0; i < 10; i++){
+void set(int pid, std::string var_name, int offset, int *values, Mmu *mmu, PageTable *pageTable, int page_size) {
+    // int process_last_page = mmu->getProcessFromPid(pid);
+    for (int i = 0; i < 10; i++) {
+
     }
 }
 
 // not using currently
-void print(Mmu *mmu){
+/*
+void print(Mmu *mmu) {
     mmu->print();
 }
+*/
