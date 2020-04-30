@@ -11,7 +11,7 @@ void create(int text_size, int data_size, Mmu *mmu, PageTable *pageTable, int pa
 void allocate(int pid, std::string var_name, std::string data_type, int number_of_elements, Mmu *mmu,
         PageTable *pageTable, int page_size);
 
-void set(int pid, std::string var_name, int offset, int *values, Mmu *mmu, PageTable *pageTable, int page_size);
+void set(int pid, std::string var_name, int offset, int *values, Mmu *mmu, PageTable *pageTable, int page_size, uint8_t *memory)
 
 int addVariable(int pid, std::string var_name, int size, Mmu *mmu, PageTable *pageTable, int page_size);
 
@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
         } else if (command == "set") {
             // set <PID> <var_name> <offset> <value_0> <value_1> <value_2> ... <value_N>
             int values[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-            set(1024, "var1", 0, values, mmu, pageTable, page_size);
+            set(1024, "var1", 0, values, mmu, pageTable, page_size, memory);
         } else if (command == "print mmu") {
             mmu->print();
         } else if (command == "print page") {
@@ -158,42 +158,10 @@ void create(int text_size, int data_size, Mmu *mmu, PageTable *pageTable, int pa
     std::cout << "pid: " << pid << std::endl;
 
     // Create <TEXT>, <GLOBALS>, and <STACK> variables
-    addVariable(pid, "<TEXT>", text_size);
-    addVariable(pid, "<GLOBALS>", data_size);
-    addVariable(pid, "<STACK>", stack_size);
+    addVariable(pid, "<TEXT>", text_size, mmu, pageTable, page_size);
+    addVariable(pid, "<GLOBALS>", data_size, mmu, pageTable, page_size);
+    addVariable(pid, "<STACK>", stack_size, mmu, pageTable, page_size);
 }
-
-/*
-void createPagesForProcess(int pid, Mmu *mmu, PageTable *pageTable){
-    // Allocate some amount of startup memory for the process
-    int stack_size = 65536; // Stack is constant 65536 bytes
-    int total_size = stack_size + text_size + data_size;
-    // number of pages needed to fit all of total_size
-    int number_of_pages = total_size / page_size; // integer division (5/2 = 3 pages)
-    std::cout << "setup memory size: " << total_size << std::endl;
-    std::cout << "number of pages: " << number_of_pages << std::endl;
-    // add a new page for each page needed to fit total_size
-    for(int page_number = 0; page_number < number_of_pages; page_number++){
-        pageTable->addEntry(pid, page_number);
-    }
-
-    std::map<std::string, int> _table;
-    mmu
-    pageTable->map
-    std::map<std::string, int> _table;
-
-    std::vector<Variable*> variables = mmu->getVariablesFromProcess(pid);
-    // loop over variables and calculate number of pages needed
-    // replace pages in page table with newly calculated pages
-    int page_number = 0;
-    int total_size = 0;
-    int page_size = 0;
-    for (int i = 0; j < variables.size(); i++){
-        variables[i]->size;
-    }
-
-}
-*/
 
 /*
 Allocate memory on the heap
@@ -220,39 +188,43 @@ void allocate(int pid, std::string var_name, std::string data_type, int number_o
         std::cout << data_type << " is not a valid data_type." << std::endl;
         return;
     }
-    std::cout << "number of bytes: " << number_of_bytes << std::endl;
+    // std::cout << "number of bytes: " << number_of_bytes << std::endl;
 
-    addVariable(pid, var_name, number_of_bytes);
-
-    // number of pages needed to fit number_of_bytes
-    /*
-    int number_of_pages = total_size / number_of_bytes; // integer division
-    std::cout << "number of pages: " << number_of_pages << std::endl;
-    // add a new page for each page needed to fit total_size
-    for(int page_number = 0; page_number < number_of_pages; page_number++){
-        pageTable->addEntry(pid, page_number);
-    }
-     */
+    addVariable(pid, var_name, number_of_bytes, mmu, pageTable, page_size);
 }
 
 int addVariable(int pid, std::string var_name, int size, Mmu *mmu, PageTable *pageTable, int page_size){
     // Get process using pid
     Process* process = mmu->getProcess(pid);
-    // Add variable to process
-    int var_virtual_address = mmu->addVariableToProcess(pid, var_name, size);
     // Add pages needed to store variable
     int number_of_pages = size / page_size; // integer division
+    if(size % page_size > 0){
+        number_of_pages++;
+    }
+    // std::cout << "size: " << size << " page_size " << page_size  << " number of pages: " << number_of_pages << std::endl;
     for(int page_number = 0; page_number < number_of_pages; page_number++){
         pageTable->addEntry(pid, process->last_page);
         process->last_page++;
     }
-    return var_virtual_address;
+
+    // Add variable to process
+    int bytes_used = number_of_pages * page_size;
+    int var_virtual_address = mmu->addVariableToProcess(pid, var_name, size, bytes_used);
+    std::cout << var_virtual_address << std::endl;
 }
 
-void set(int pid, std::string var_name, int offset, int *values, Mmu *mmu, PageTable *pageTable, int page_size) {
-    // int process_last_page = mmu->getProcessFromPid(pid);
-    for (int i = 0; i < 10; i++) {
-
+void set(int pid, std::string var_name, int offset, int *values, Mmu *mmu, PageTable *pageTable, int page_size, uint8_t *memory) {
+    Process *process = mmu->getProcess(pid);
+    std::vector<Variable*> variables = process->variables;
+    int virtual_address;
+    for(int i = 0; i < variables.size(); i++){
+        if(variables[i]->name == var_name){
+            virtual_address = variables[i]->virtual_address;
+        }
+    }
+    int physical_address = pageTable->getPhysicalAddress(pid, virtual_address);
+    for (i = 0; i < 10; i++) {
+        memory[physical_address] = values[i];
     }
 }
 

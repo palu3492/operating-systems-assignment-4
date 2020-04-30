@@ -1,6 +1,6 @@
 #include "mmu.h"
 
-Mmu::Mmu(int memory_size) {
+Mmu::Mmu(int memory_size, int page_size) {
     _next_pid = 1024;
     _max_size = memory_size;
 }
@@ -29,7 +29,7 @@ Process *Mmu::getProcess(int pid) {
     }
 }
 
-int Mmu::addVariableToProcess(int pid, std::string name, int size) {
+int Mmu::addVariableToProcess(int pid, std::string name, int size, int bytes_used) {
     for (int i = 0; i < _processes.size(); i++) {
         // find process that matches supplied pid
         if (_processes[i]->pid == pid) {
@@ -38,7 +38,8 @@ int Mmu::addVariableToProcess(int pid, std::string name, int size) {
             int virtual_address = _processes[i]->end_of_memory;
             var = createVariable(name, virtual_address, size);
             // last available byte will now change to be what it was plus the additional added memory
-            _processes[i]->end_of_memory += size;
+            // add based on pages because each new allocation is a new page
+            _processes[i]->end_of_memory += bytes_used;
             _processes[i]->variables.push_back(var);
 
             return virtual_address;
@@ -50,18 +51,18 @@ Variable *Mmu::createVariable(std::string name, int address, int size) {
     std::cout << name << " created at virtual address " << address << std::endl;
     Variable *var = new Variable();
     var->name = name;
-    var->virtual_address = address; // is virtual address calculated here or passed in?
+    var->virtual_address = address;
     var->size = size;
     return var;
 }
 
-std::vector<Variable *> Mmu::getVariablesFromProcess(int pid) {
-    for (int i = 0; i < _processes.size(); i++) {
-        if (_processes[i]->pid == pid) {
-            return _processes[i]->variables;
-        }
-    }
-}
+//std::vector<Variable *> Mmu::getVariablesFromProcess(int pid) {
+//    for (int i = 0; i < _processes.size(); i++) {
+//        if (_processes[i]->pid == pid) {
+//            return _processes[i]->variables;
+//        }
+//    }
+//}
 
 void Mmu::print() {
     int i, j;

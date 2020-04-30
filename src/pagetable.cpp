@@ -19,7 +19,7 @@ void PageTable::addEntry(uint32_t pid, int page_number)
     // Start at 0 and increment up until a free frame is found
     int frame = 0;
     sort(_frames.begin(), _frames.end()); // sort _frames from smallest to largest
-    std::cout << "existing number of frames: " << _frames.size() << std::endl;
+    // std::cout << "existing number of frames: " << _frames.size() << std::endl;
     // Looks for hole in frames, if non then put at end
     for(int i = 0; i <= _frames.size(); i++){
         // check if there is an empty frame in _frames
@@ -29,10 +29,10 @@ void PageTable::addEntry(uint32_t pid, int page_number)
             // found free frame
             break;
         }
-//        std::cout << "frame checked: " << _frames[i] << std::endl;
+        // std::cout << "frame checked: " << _frames[i] << std::endl;
         frame++;
     }
-    std::cout << "page" << page_number << " inserted at frame: " << frame << std::endl;
+    std::cout << "page " << page_number << " inserted at frame: " << frame << std::endl;
     _frames.push_back(frame); // store which frame is in use
     _table[entry] = frame; // add frame to table
 }
@@ -44,8 +44,8 @@ int PageTable::getPhysicalAddress(uint32_t pid, int virtual_address)
     int page_number = 0;
     int page_offset = 0;
 
-    page_number = virtual_address / _page_size;
-    page_offset = virtual_address % _page_size;
+    page_number = virtual_address / _page_size; // 11 / 5 = 2
+    page_offset = virtual_address % _page_size; // left over is offset = 1
 
     // Combination of pid and page number act as the key to look up frame number
     std::string entry = std::to_string(pid) + "|" + std::to_string(page_number);
