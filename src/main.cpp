@@ -13,6 +13,8 @@ void allocate(int pid, std::string var_name, std::string data_type, int number_o
 
 void set(int pid, std::string var_name, int offset, int *values, Mmu *mmu, PageTable *pageTable, int page_size);
 
+int addVariable(int pid, std::string var_name, int size, Mmu *mmu, PageTable *pageTable, int page_size);
+
 // void print(Mmu *mmu);
 
 /*
@@ -155,19 +157,10 @@ void create(int text_size, int data_size, Mmu *mmu, PageTable *pageTable, int pa
     int pid = mmu->createProcess(); // pid starts at 1024
     std::cout << "pid: " << pid << std::endl;
 
-    Process* newProcess = mmu->getProcess(pid);
-
     // Create <TEXT>, <GLOBALS>, and <STACK> variables
-    mmu->addVariableToProcess(pid, "<TEXT>", text_size);
-    pageTable->addEntry(pid, newProcess->last_page);
-    newProcess->last_page++;
-    mmu->addVariableToProcess(pid, "<GLOBALS>", data_size);
-    pageTable->addEntry(pid, newProcess->last_page);
-    newProcess->last_page++;
-    mmu->addVariableToProcess(pid, "<STACK>", stack_size);
-    pageTable->addEntry(pid, newProcess->last_page);
-    newProcess->last_page++;
-
+    addVariable(pid, "<TEXT>", text_size);
+    addVariable(pid, "<GLOBALS>", data_size);
+    addVariable(pid, "<STACK>", stack_size);
 }
 
 /*
@@ -229,8 +222,7 @@ void allocate(int pid, std::string var_name, std::string data_type, int number_o
     }
     std::cout << "number of bytes: " << number_of_bytes << std::endl;
 
-    int var_virtual_address = mmu->addVariableToProcess(pid, var_name, number_of_bytes);
-    std::cout << var_virtual_address << std::endl;
+    addVariable(pid, var_name, number_of_bytes);
 
     // number of pages needed to fit number_of_bytes
     /*
@@ -241,6 +233,20 @@ void allocate(int pid, std::string var_name, std::string data_type, int number_o
         pageTable->addEntry(pid, page_number);
     }
      */
+}
+
+int addVariable(int pid, std::string var_name, int size, Mmu *mmu, PageTable *pageTable, int page_size){
+    // Get process using pid
+    Process* process = mmu->getProcess(pid);
+    // Add variable to process
+    int var_virtual_address = mmu->addVariableToProcess(pid, var_name, size);
+    // Add pages needed to store variable
+    int number_of_pages = size / page_size; // integer division
+    for(int page_number = 0; page_number < number_of_pages; page_number++){
+        pageTable->addEntry(pid, process->last_page);
+        process->last_page++;
+    }
+    return var_virtual_address;
 }
 
 void set(int pid, std::string var_name, int offset, int *values, Mmu *mmu, PageTable *pageTable, int page_size) {

@@ -3,8 +3,6 @@
 Mmu::Mmu(int memory_size) {
     _next_pid = 1024;
     _max_size = memory_size;
-    proc->end_of_memory = 0;
-    proc->last_page = 0;
 }
 
 Mmu::~Mmu() {
@@ -90,7 +88,7 @@ void Mmu::print() {
  * initiated by command 'print processes'
  */
 void Mmu::printProcesses() {
-    for (i = 0; i < _processes.size(); i++) {
+    for (int i = 0; i < _processes.size(); i++) {
         std::cout << _processes[i]->pid << std::endl;
     }
 }

@@ -29,10 +29,10 @@ void PageTable::addEntry(uint32_t pid, int page_number)
             // found free frame
             break;
         }
-        std::cout << "frame checked: " << _frames[i] << std::endl;
+//        std::cout << "frame checked: " << _frames[i] << std::endl;
         frame++;
     }
-    std::cout << "frame: " << frame << std::endl;
+    std::cout << "page" << page_number << " inserted at frame: " << frame << std::endl;
     _frames.push_back(frame); // store which frame is in use
     _table[entry] = frame; // add frame to table
 }
