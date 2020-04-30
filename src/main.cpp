@@ -11,7 +11,7 @@ void create(int text_size, int data_size, Mmu *mmu, PageTable *pageTable, int pa
 void allocate(int pid, std::string var_name, std::string data_type, int number_of_elements, Mmu *mmu,
         PageTable *pageTable, int page_size);
 
-void set(int pid, std::string var_name, int offset, int *values, Mmu *mmu, PageTable *pageTable, int page_size, uint8_t *memory)
+void set(int pid, std::string var_name, int offset, int *values, Mmu *mmu, PageTable *pageTable, int page_size, uint8_t *memory);
 
 int addVariable(int pid, std::string var_name, int size, Mmu *mmu, PageTable *pageTable, int page_size);
 
@@ -223,7 +223,7 @@ void set(int pid, std::string var_name, int offset, int *values, Mmu *mmu, PageT
         }
     }
     int physical_address = pageTable->getPhysicalAddress(pid, virtual_address);
-    for (i = 0; i < 10; i++) {
+    for(int i = 0; i < 10; i++) {
         memory[physical_address] = values[i];
     }
 }
