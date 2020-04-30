@@ -1,6 +1,6 @@
 #include "mmu.h"
 
-Mmu::Mmu(int memory_size, int page_size) {
+Mmu::Mmu(int memory_size) {
     _next_pid = 1024;
     _max_size = memory_size;
 }
@@ -55,14 +55,6 @@ Variable *Mmu::createVariable(std::string name, int address, int size) {
     var->size = size;
     return var;
 }
-
-//std::vector<Variable *> Mmu::getVariablesFromProcess(int pid) {
-//    for (int i = 0; i < _processes.size(); i++) {
-//        if (_processes[i]->pid == pid) {
-//            return _processes[i]->variables;
-//        }
-//    }
-//}
 
 void Mmu::print() {
     int i, j;

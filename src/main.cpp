@@ -92,6 +92,8 @@ int main(int argc, char **argv) {
             // set
             // free
             // terminate
+        } else if (command == "print page") {
+            pageTable->print();
         } else {
             std::cout << command << " is not a valid command." << std::endl;
         }
