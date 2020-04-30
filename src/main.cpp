@@ -155,11 +155,18 @@ void create(int text_size, int data_size, Mmu *mmu, PageTable *pageTable, int pa
     int pid = mmu->createProcess(); // pid starts at 1024
     std::cout << "pid: " << pid << std::endl;
 
+    Process* newProcess = mmu->getProcess(pid);
+
     // Create <TEXT>, <GLOBALS>, and <STACK> variables
     mmu->addVariableToProcess(pid, "<TEXT>", text_size);
+    pageTable->addEntry(pid, newProcess->last_page);
+    newProcess->last_page++;
     mmu->addVariableToProcess(pid, "<GLOBALS>", data_size);
+    pageTable->addEntry(pid, newProcess->last_page);
+    newProcess->last_page++;
     mmu->addVariableToProcess(pid, "<STACK>", stack_size);
-
+    pageTable->addEntry(pid, newProcess->last_page);
+    newProcess->last_page++;
 
 }
 

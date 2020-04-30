@@ -1,33 +1,40 @@
 #include "mmu.h"
 
-Mmu::Mmu(int memory_size)
-{
+Mmu::Mmu(int memory_size) {
     _next_pid = 1024;
     _max_size = memory_size;
     proc->end_of_memory = 0;
     proc->last_page = 0;
 }
 
-Mmu::~Mmu()
-{
+Mmu::~Mmu() {
     // destructor
 }
 
-uint32_t Mmu::createProcess()
-{
-    Process *proc = new Process();
-    proc->pid = _next_pid; // Assign a PID
+uint32_t Mmu::createProcess() {
+    Process *newProcess = new Process();
+    newProcess->pid = _next_pid; // Assign a PID
+    newProcess->last_page = 0;
+    newProcess->end_of_memory = 0;
 
-    _processes.push_back(proc); // Push process onto back of processes Vector
+    _processes.push_back(newProcess); // Push process onto back of processes Vector
 
     _next_pid++; // increment pid for next process
-    return proc->pid;
+    return newProcess->pid;
 }
 
-int Mmu::addVariableToProcess(int pid, std::string name, int size){
-    for (int i = 0; i < _processes.size(); i++){
+Process *Mmu::getProcess(int pid) {
+    for (int i = 0; i < _processes.size(); i++) {
+        if (_processes[i]->pid == pid) {
+            return _processes[i];
+        }
+    }
+}
+
+int Mmu::addVariableToProcess(int pid, std::string name, int size) {
+    for (int i = 0; i < _processes.size(); i++) {
         // find process that matches supplied pid
-        if(_processes[i]->pid == pid){
+        if (_processes[i]->pid == pid) {
             Variable *var;
             // put var in virtual memory at last available byte
             int virtual_address = _processes[i]->end_of_memory;
@@ -41,7 +48,7 @@ int Mmu::addVariableToProcess(int pid, std::string name, int size){
     }
 }
 
-Variable* Mmu::createVariable(std::string name, int address, int size){
+Variable *Mmu::createVariable(std::string name, int address, int size) {
     std::cout << name << " created at virtual address " << address << std::endl;
     Variable *var = new Variable();
     var->name = name;
@@ -50,26 +57,24 @@ Variable* Mmu::createVariable(std::string name, int address, int size){
     return var;
 }
 
-std::vector<Variable*> Mmu::getVariablesFromProcess(int pid){
-    for (int i = 0; i < _processes.size(); i++){
-        if(_processes[i]->pid == pid){
+std::vector<Variable *> Mmu::getVariablesFromProcess(int pid) {
+    for (int i = 0; i < _processes.size(); i++) {
+        if (_processes[i]->pid == pid) {
             return _processes[i]->variables;
         }
+    }
 }
 
-void Mmu::print()
-{
+void Mmu::print() {
     int i, j;
 
     std::cout << " PID  | Variable Name | Virtual Addr | Size" << std::endl;
     std::cout << "------+---------------+--------------+------------" << std::endl;
-    for (i = 0; i < _processes.size(); i++)
-    {
-        for (j = 0; j < _processes[i]->variables.size(); j++)
-        {
+    for (i = 0; i < _processes.size(); i++) {
+        for (j = 0; j < _processes[i]->variables.size(); j++) {
             // TODO: print all variables (excluding <FREE_SPACE> entries)
             std::string name = _processes[i]->variables[j]->name;
-            if(name != "<FREE_SPACE>"){
+            if (name != "<FREE_SPACE>") {
                 std::cout << " " << _processes[i]->pid << " | ";
                 std::cout << name << " | ";
                 // TODO: Hex?
@@ -84,10 +89,8 @@ void Mmu::print()
  * Print pid of each process
  * initiated by command 'print processes'
  */
-void Mmu::printProcesses()
-{
-    for (i = 0; i < _processes.size(); i++)
-    {
+void Mmu::printProcesses() {
+    for (i = 0; i < _processes.size(); i++) {
         std::cout << _processes[i]->pid << std::endl;
     }
 }

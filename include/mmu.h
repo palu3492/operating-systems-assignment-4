@@ -37,6 +37,7 @@ public:
     std::vector<Variable*> getVariablesFromProcess(int pid);
     void print();
     void printProcesses();
+    Process *getProcess(int pid);
 };
 
 #endif // __MMU_H_
