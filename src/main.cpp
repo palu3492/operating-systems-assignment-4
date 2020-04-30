@@ -68,6 +68,7 @@ int main(int argc, char **argv) {
 	
 	//Holds everything after the first space
 	std::string command_data;
+	
 	splitCommand(&command, &command_data);
 	
 	std::vector<std::string> arguments;
@@ -76,6 +77,7 @@ int main(int argc, char **argv) {
     while (command != "exit") {
         // Handle commands
 
+        //empty arguements vector
         arguments.clear();
         
         // TODO: need to get command by splitting on space
@@ -301,7 +303,7 @@ void print(Mmu *mmu) {
 }
 */
 
-//unused 
+//Splits the input command at the first space into a command and its arguments 
 void splitCommand(std::string *first, std::string *second)
 {
 	std::string::size_type pos;
@@ -314,6 +316,7 @@ void splitCommand(std::string *first, std::string *second)
 	std::cout << "Command Data: " << *second << std::endl;
 }
 
+//Splits the input command arguements with a space delimiter
 std::vector<std::string> splitBySpace(std::string data)
 {
     std::vector<std::string> result;
