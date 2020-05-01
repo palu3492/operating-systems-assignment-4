@@ -236,8 +236,7 @@ allocate <PID> <var_name> <data_type> <number_of_elements>
 Allocated memory on the heap (how much depends on the data type and the number of elements)
 Print the virtual memory address
  */
-void
-allocate(int pid, std::string var_name, std::string data_type, int number_of_elements, Mmu *mmu, PageTable *pageTable, int page_size) {
+void allocate(int pid, std::string var_name, std::string data_type, int number_of_elements, Mmu *mmu, PageTable *pageTable, int page_size) {
     int number_of_bytes = number_of_elements;
     // If 'char' then do nothing, else multiply by number of bytes for each data type
     if (data_type == "short") {
@@ -257,8 +256,11 @@ allocate(int pid, std::string var_name, std::string data_type, int number_of_ele
 }
 
 int addVariable(int pid, std::string var_name, int size, Mmu *mmu, PageTable *pageTable, int page_size) {
+    // TODO: Use first fit algorithm within a page when allocating new data
+
     // Get process using pid
     Process *process = mmu->getProcess(pid);
+
     // Add pages needed to store variable
     int number_of_pages = size / page_size; // integer division
     if (size % page_size > 0) {

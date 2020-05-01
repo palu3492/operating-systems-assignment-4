@@ -19,8 +19,8 @@ typedef struct Process {
     std::vector<Variable *> variables;
     // the last byte of used virtual memory taken up by variables
     // start at 0
-    int end_of_memory;
-    int last_page;
+//    int end_of_memory;
+//    int last_page;
 } Process;
 
 class Mmu {
@@ -30,6 +30,7 @@ private:
     std::vector<Process *> _processes;
 
     Variable *createVariable(std::string name, int address, int size);
+    int calculateVirtualAddress(Process* process);
 
 public:
     Mmu(int memory_size);
@@ -38,7 +39,7 @@ public:
 
     uint32_t createProcess();
 
-    int addVariableToProcess(int pid, std::string name, int size, int bytes_used);
+    int addVariableToProcess(int pid, std::string name, int size);
 
     std::vector<Variable *> getVariablesFromProcess(int pid);
 
