@@ -11,8 +11,7 @@ Mmu::~Mmu() {
 
 uint32_t Mmu::createProcess() {
     Process *newProcess = new Process();
-    int pid = _next_pid;
-    newProcess->pid = pid; // Assign a PID
+    newProcess->pid = _next_pid; // Assign a PID
 //    newProcess->last_page = 0;
 //    newProcess->end_of_memory = 0;
 
@@ -21,6 +20,7 @@ uint32_t Mmu::createProcess() {
     var->name = "<FREE_SPACE>";
     var->virtual_address = 0;
     var->size = _max_size;
+    newProcess->variables.push_back(var);
 
     _processes.push_back(newProcess); // Push process onto back of processes Vector
 
@@ -40,23 +40,19 @@ int Mmu::addVariableToProcess(int pid, std::string name, int size) {
     Process* process = getProcess(pid);
 
     Variable *var;
-    // put var in virtual memory at last available byte
-//    int virtual_address = process->end_of_memory;
-    int virtual_address = calculateVirtualAddress(process);
+    int virtual_address = calculateVirtualAddress(process, size);
     var = createVariable(name, virtual_address, size);
-    // last available byte will now change to be what it was plus the additional added memory
-    // add based on pages because each new allocation is a new page
-    // _processes[i]->end_of_memory += bytes_used;
-    _processes[i]->variables.push_back(var);
+
+    process->variables.push_back(var);
 
     return virtual_address;
 }
 
-int Mmu::calculateVirtualAddress(Process* process){
+int Mmu::calculateVirtualAddress(Process* process, int size){
     std::vector<Variable *> variables = process->variables;
-    total_free_space = 0;
+    int total_free_space = 0;
     Variable* free_space_var;
-    for (i = 0; i < variables.size(); i++) {
+    for (int i = 0; i < variables.size(); i++) {
         if(variables[i]->name == "<FREE_SPACE>"){
             if(total_free_space == 0){
                 free_space_var = variables[i];
@@ -69,7 +65,6 @@ int Mmu::calculateVirtualAddress(Process* process){
             return free_space_var->virtual_address;
         }
     }
-    return variables[variables.size()-1]->virtual_address + _max_size;
 }
 
 Variable *Mmu::createVariable(std::string name, int address, int size) {

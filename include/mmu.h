@@ -30,7 +30,8 @@ private:
     std::vector<Process *> _processes;
 
     Variable *createVariable(std::string name, int address, int size);
-    int calculateVirtualAddress(Process* process);
+
+    int calculateVirtualAddress(Process* process, int size);
 
 public:
     Mmu(int memory_size);
