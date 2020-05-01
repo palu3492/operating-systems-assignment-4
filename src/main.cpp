@@ -10,18 +10,16 @@ void printStartMessage(int page_size);
 void create(int text_size, int data_size, Mmu *mmu, PageTable *pageTable, int page_size);
 
 void allocate(int pid, std::string var_name, std::string data_type, int number_of_elements, Mmu *mmu,
-        PageTable *pageTable, int page_size);
+              PageTable *pageTable, int page_size);
 
-void set(int pid, std::string var_name, int offset, int *values, Mmu *mmu, PageTable *pageTable, int page_size, uint8_t *memory);
+void set(int pid, std::string var_name, int offset, int *values, Mmu *mmu, PageTable *pageTable, int page_size,
+         uint8_t *memory);
 
 int addVariable(int pid, std::string var_name, int size, Mmu *mmu, PageTable *pageTable, int page_size);
 
-// void print(Mmu *mmu);
-
-
 void splitCommand(std::string *first, std::string *second);
 
-std::vector<std::string> splitBySpace(std::string data);
+std::vector <std::string> splitBySpace(std::string data);
 
 /*
 You will not actually be spawning processes that consume memory.
@@ -49,7 +47,7 @@ int main(int argc, char **argv) {
     // Print opening instruction message
     printStartMessage(page_size);
 
-    // Create physical 'memory'
+    // Create physical 'memory' 64 MB of memory
     // Array of unsigned ints (8-bit ints, bytes)
     uint8_t *memory = new uint8_t[67108864]; // 64 MB (64 * 1024 * 1024)
 
@@ -65,93 +63,89 @@ int main(int argc, char **argv) {
     std::string command; // create, allocate, set, free, terminate, print
     std::cout << "> ";
     std::getline(std::cin, command); // get line typed and store as command
-	
-	//Holds everything after the first space
-	std::string command_data;
-	
-	splitCommand(&command, &command_data);
-	
-	std::vector<std::string> arguments;
-	
+
+    //Holds everything after the first space
+    std::string command_data;
+    // Parse command into command and its arguments
+    splitCommand(&command, &command_data);
+    // Holds command arguments, different for each command
+    std::vector <std::string> arguments;
+
     // while the user doesn't type 'exit' command, keep asking for commands
     while (command != "exit") {
         // Handle commands
 
-        //empty arguements vector
+        //empty arguments vector
         arguments.clear();
-        
-        // TODO: need to get command by splitting on space
-        std::cout << "Command: " << command << std::endl;
 
-        // New function to handle each command
-        // using constant values for testing
+        // Each command is handled in its own function
         if (command == "create") {
             // create <text_size> <data_size>
             arguments = splitBySpace(command_data);
-            if(arguments.size() != 2){
+            if (arguments.size() != 2) {
                 std::cout << command << " " << command_data << " is not a valid command." << std::endl;
-                std::cout << command << " " << command_data << " does not have the correct number of arguments." << std::endl;
-            
-            } else{
-            int text_size = std::stoi (arguments[0]);
-            int data_size = std::stoi (arguments[1]);
-            std::cout << "text_size: " << text_size << std::endl;
-	        std::cout << "data_size: " << data_size << std::endl;
-            
-            create(text_size, data_size, mmu, pageTable, page_size);
+                std::cout << command << " " << command_data << " does not have the correct number of arguments."
+                          << std::endl;
+
+            } else {
+                int text_size = std::stoi(arguments[0]);
+                int data_size = std::stoi(arguments[1]);
+                std::cout << "text_size: " << text_size << std::endl;
+                std::cout << "data_size: " << data_size << std::endl;
+
+                create(text_size, data_size, mmu, pageTable, page_size);
+                // int text_size = 2048;
+                // int data_size = 1024;
+                // Example: create(text_size, data_size, mmu, pageTable, page_size);
             }
-            
-            //int text_size = 2048;
-            //int data_size = 1024;
-            //create(text_size, data_size, mmu, pageTable, page_size);
         } else if (command == "allocate") {
             // allocate <PID> <var_name> <data_type> <number_of_elements>
             arguments = splitBySpace(command_data);
-            if(arguments.size() != 4){
+            if (arguments.size() != 4) {
                 std::cout << command << " " << command_data << " is not a valid command." << std::endl;
-                std::cout << command << " " << command_data << " does not have the correct number of arguments." << std::endl;
-            
-            } else{
-            int PID = std::stoi (arguments[0]);
-            std::string var_name = arguments[1];
-            std::string data_type = arguments[2];
-            int number_of_elements = std::stoi (arguments[3]);
-            
-            allocate(PID, var_name, data_type, number_of_elements, mmu, pageTable, page_size);
+                std::cout << command << " " << command_data << " does not have the correct number of arguments."
+                          << std::endl;
+
+            } else {
+                int PID = std::stoi(arguments[0]);
+                std::string var_name = arguments[1];
+                std::string data_type = arguments[2];
+                int number_of_elements = std::stoi(arguments[3]);
+
+                allocate(PID, var_name, data_type, number_of_elements, mmu, pageTable, page_size);
+                //allocate(1024, "var1", "int", 10, mmu, pageTable, page_size);
             }
-            
-            //allocate(1024, "var1", "int", 10, mmu, pageTable, page_size);
         } else if (command == "set") {
             // set <PID> <var_name> <offset> <value_0> <value_1> <value_2> ... <value_N>
             arguments = splitBySpace(command_data);
-            if(arguments.size() < 4){
+            if (arguments.size() < 4) {
                 std::cout << command << " " << command_data << " is not a valid command." << std::endl;
                 std::cout << command << " " << command_data << " does not have enough arguments." << std::endl;
-            
-            } else{
-                int PID = std::stoi (arguments[0]);
+
+            } else {
+                int PID = std::stoi(arguments[0]);
                 std::string var_name = arguments[1];
-                int offset = std::stoi (arguments[2]);
-                std::vector<std::string> values;
-                
-                for(int i = 3; i < arguments.size(); i++){
+                int offset = std::stoi(arguments[2]);
+                std::vector <std::string> values;
+
+                for (int i = 3; i < arguments.size(); i++) {
                     values.push_back(arguments[i]);
-                } 
-                
+                }
+
+                //set(1024, "var1", 0, values, mmu, pageTable, page_size, memory);
+                //int values[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
                 //set(1024, "var1", 0, values, mmu, pageTable, page_size, memory);
             }
-            //int values[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-            //set(1024, "var1", 0, values, mmu, pageTable, page_size, memory);
         } else if (command == "print") {
-            if(command_data == "mmu"){
+            if (command_data == "mmu") {
                 mmu->print();
-            } else if(command_data == "page"){
+            } else if (command_data == "page") {
                 pageTable->print();
-            } else if(command_data == "processes"){
-                mmu->printProcesses(); 
+            } else if (command_data == "processes") {
+                mmu->printProcesses();
             } else {
                 // <PID>:<var_name>
-            
+
             }
         } /*else if (command == "free") {
             
@@ -164,7 +158,7 @@ int main(int argc, char **argv) {
         // Get next command
         std::cout << "> ";
         std::getline(std::cin, command);
-        
+
         command_data = "";
         splitCommand(&command, &command_data);
     }
@@ -242,7 +236,8 @@ allocate <PID> <var_name> <data_type> <number_of_elements>
 Allocated memory on the heap (how much depends on the data type and the number of elements)
 Print the virtual memory address
  */
-void allocate(int pid, std::string var_name, std::string data_type, int number_of_elements, Mmu *mmu, PageTable *pageTable, int page_size) {
+void
+allocate(int pid, std::string var_name, std::string data_type, int number_of_elements, Mmu *mmu, PageTable *pageTable, int page_size) {
     int number_of_bytes = number_of_elements;
     // If 'char' then do nothing, else multiply by number of bytes for each data type
     if (data_type == "short") {
@@ -261,16 +256,16 @@ void allocate(int pid, std::string var_name, std::string data_type, int number_o
     addVariable(pid, var_name, number_of_bytes, mmu, pageTable, page_size);
 }
 
-int addVariable(int pid, std::string var_name, int size, Mmu *mmu, PageTable *pageTable, int page_size){
+int addVariable(int pid, std::string var_name, int size, Mmu *mmu, PageTable *pageTable, int page_size) {
     // Get process using pid
-    Process* process = mmu->getProcess(pid);
+    Process *process = mmu->getProcess(pid);
     // Add pages needed to store variable
     int number_of_pages = size / page_size; // integer division
-    if(size % page_size > 0){
+    if (size % page_size > 0) {
         number_of_pages++;
     }
     // std::cout << "size: " << size << " page_size " << page_size  << " number of pages: " << number_of_pages << std::endl;
-    for(int page_number = 0; page_number < number_of_pages; page_number++){
+    for (int page_number = 0; page_number < number_of_pages; page_number++) {
         pageTable->addEntry(pid, process->last_page);
         process->last_page++;
     }
@@ -283,51 +278,42 @@ int addVariable(int pid, std::string var_name, int size, Mmu *mmu, PageTable *pa
 
 void set(int pid, std::string var_name, int offset, int *values, Mmu *mmu, PageTable *pageTable, int page_size, uint8_t *memory) {
     Process *process = mmu->getProcess(pid);
-    std::vector<Variable*> variables = process->variables;
+    std::vector < Variable * > variables = process->variables;
     int virtual_address;
-    for(int i = 0; i < variables.size(); i++){
-        if(variables[i]->name == var_name){
+    for (int i = 0; i < variables.size(); i++) {
+        if (variables[i]->name == var_name) {
             virtual_address = variables[i]->virtual_address;
         }
     }
     int physical_address = pageTable->getPhysicalAddress(pid, virtual_address);
-    for(int i = 0; i < 10; i++) {
+    for (int i = 0; i < 10; i++) {
         memory[physical_address] = values[i];
     }
 }
 
-// not using currently
-/*
-void print(Mmu *mmu) {
-    mmu->print();
-}
-*/
-
 //Splits the input command at the first space into a command and its arguments 
-void splitCommand(std::string *first, std::string *second)
-{
-	std::string::size_type pos;
-	pos = first->find(' ',0);
-	if(pos !=std::string::npos){ 	
-		*second = first->substr(pos+1);
-		*first = first->substr(0,pos); 
-	}
-	std::cout << "Command: " << *first << std::endl;
-	std::cout << "Command Data: " << *second << std::endl;
+void splitCommand(std::string *first, std::string *second) {
+    std::string::size_type pos;
+    pos = first->find(' ', 0);
+    if (pos != std::string::npos) {
+        *second = first->substr(pos + 1);
+        *first = first->substr(0, pos);
+    }
+    std::cout << "Command: " << *first << std::endl;
+    std::cout << "Command Data: " << *second << std::endl;
 }
 
-//Splits the input command arguements with a space delimiter
-std::vector<std::string> splitBySpace(std::string data)
-{
-    std::vector<std::string> result;
+//Splits the input command arguments with a space delimiter
+std::vector <std::string> splitBySpace(std::string data) {
+    std::vector <std::string> result;
     std::string token = " ";
-    while(data.size()){
+    while (data.size()) {
         int index = data.find(token);
-        if(index!=std::string::npos){
-            result.push_back(data.substr(0,index));
-            data = data.substr(index+token.size());
-            if(data.size()==0)result.push_back(data);
-        }else{
+        if (index != std::string::npos) {
+            result.push_back(data.substr(0, index));
+            data = data.substr(index + token.size());
+            if (data.size() == 0)result.push_back(data);
+        } else {
             result.push_back(data);
             data = "";
         }

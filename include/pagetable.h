@@ -15,10 +15,13 @@ private:
 
 public:
     PageTable(int page_size);
+
     ~PageTable();
 
     void addEntry(uint32_t pid, int page_number);
+
     int getPhysicalAddress(uint32_t pid, int virtual_address);
+
     void print();
 };
 
