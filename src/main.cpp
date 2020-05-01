@@ -20,6 +20,8 @@ void splitCommand(std::string *first, std::string *second);
 
 std::vector <std::string> splitBySpace(std::string data);
 
+void printVariable(int pid, std::string name, Mmu *mmu, PageTable *pageTable, uint8_t *memory);
+
 /*
 You will not actually be spawning processes that consume memory.
 Rather you will be creating simulated "processes" that each make
@@ -93,9 +95,7 @@ int main(int argc, char **argv) {
                 std::cout << "data_size: " << data_size << std::endl;
 
                 create(text_size, data_size, mmu, pageTable, page_size);
-                // int text_size = 2048;
-                // int data_size = 1024;
-                // Example: create(text_size, data_size, mmu, pageTable, page_size);
+                // create(2048, 1024, mmu, pageTable, page_size);
             }
         } else if (command == "allocate") {
             // allocate <PID> <var_name> <data_type> <number_of_elements>
@@ -112,7 +112,7 @@ int main(int argc, char **argv) {
                 int number_of_elements = std::stoi(arguments[3]);
 
                 allocate(PID, var_name, data_type, number_of_elements, mmu, pageTable, page_size);
-                //allocate(1024, "var1", "int", 10, mmu, pageTable, page_size);
+                // allocate(1024, "var1", "int", 10, mmu, pageTable, page_size);
             }
         } else if (command == "set") {
             // set <PID> <var_name> <offset> <value_0> <value_1> <value_2> ... <value_N>
@@ -132,9 +132,7 @@ int main(int argc, char **argv) {
                 }
 
                 set(PID, var_name, offset, values, mmu, pageTable, page_size, memory);
-                //set(1024, "var1", 0, values, mmu, pageTable, page_size, memory);
-                //int values[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-                //set(1024, "var1", 0, values, mmu, pageTable, page_size, memory);
+                // set(1024, "var1", 0, values, mmu, pageTable, page_size, memory);
             }
         } else if (command == "print") {
             if (command_data == "mmu") {
@@ -147,16 +145,17 @@ int main(int argc, char **argv) {
                 arguments = splitBySpace(command_data);
                 int pid = std::stoi(arguments[0]);
                 std::string var_name = arguments[1];
-                printVariable(pid, var_name);
+
+                printVariable(pid, var_name, mmu, pageTable, memory);
 
                 // <PID>:<var_name>
 
             }
-        } /*else if (command == "free") {
+        } else if (command == "free") {
             
         } else if (command == "terminate") {
             
-        }*/ else {
+        } else {
             std::cout << command << " is not a valid command." << std::endl;
         }
 
@@ -290,19 +289,28 @@ void set(int pid, std::string var_name, int offset, std::vector <std::string> va
     std::string type = variable->type;
     int physical_address = pageTable->getPhysicalAddress(pid, virtual_address);
 
+    std::cout << "va: " << virtual_address << " pa: " << physical_address << std::endl;
+
     // std::vector<double> new_values(values.begin(), values.end());
+
+    std::vector<int> new_values;
 
     if(type == "char"){
 //        std::vector<char> new_values;
     } else if(type == "short"){
 //        std::vector<char> new_values;
     } else if(type == "int"){
-//        std::vector<char> new_values;
+        for(int i = 0; i < values.size(); i++){
+            new_values.push_back(std::stoi(values[i]));
+        }
     } else if(type == "long"){
 //        std::vector<double> new_values(values.begin(), values.end());
     }
-    std::memcpy(&memory[physical_address], &values, values.size());
+
     std::cout << "address: " << physical_address << std::endl;
+
+    std::memcpy(&memory[physical_address], new_values.data(), new_values.size()*4);
+
 //    for (int i = 0; i < 10; i++) {
 //        memory[physical_address] = values[i];
 //    }
@@ -338,15 +346,31 @@ std::vector <std::string> splitBySpace(std::string data) {
     return result;
 }
 
-void printVariable(int pid, std::string name){
-    Variable* variable = mmu->getVariableFromProcess(pid, var_name);
+void printVariable(int pid, std::string name, Mmu *mmu, PageTable *pageTable, uint8_t *memory){
+
+    std::cout << "pid: " << pid << " name: " << name << std::endl;
+    Variable* variable = mmu->getVariableFromProcess(pid, name);
 
     int virtual_address = variable->virtual_address;
     int physical_address = pageTable->getPhysicalAddress(pid, virtual_address);
+    std::cout << "va: " << virtual_address << " pa: " << physical_address << std::endl;
 
     int size = variable->size;
+    std::cout << "size: " << size << std::endl;
 
-    std::vector<std::string> values;
+    // std::vector<int> values;
 
-    std::memcpy(&values, &memory[physical_address], size);
+    int values[size/4];
+
+    // std::copy(&memory + physical_address, &memory + physical_address + size, values.begin());
+
+//     std::memcpy(&values, &memory + physical_address, size);
+     std::memcpy(values, &memory[physical_address], size);
+
+//    std::cout << "values size: " << values.size() << std::endl;
+
+    for(int i = 0; i < 3; i++){
+        std::cout << values[i] << ", ";
+    }
+    std::cout << std::endl;
 }

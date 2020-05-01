@@ -74,7 +74,7 @@ int Mmu::calculateVirtualAddress(Process* process, int size){
     int virtual_address = last_free_space_var->virtual_address;
     free_space_var->virtual_address += size;
     int offset = _max_size % free_space_var->virtual_address;
-    free_space_var->size = _max_size - offset;
+    free_space_var->size = _max_size - offset; // should be page_size
     return virtual_address;
 }
 
@@ -104,7 +104,8 @@ Variable *Mmu::getVariableFromProcess(int pid, std::string name){
     Process *process = getProcess(pid);
     std::vector<Variable*> variables = process->variables;
     for (int i = 0; i < variables.size(); i++) {
-        if (variables[i]->name == var_name) {
+        if (variables[i]->name == name) {
+            std::cout << "returning " << variables[i]->name << std::endl;
             return variables[i];
         }
     }

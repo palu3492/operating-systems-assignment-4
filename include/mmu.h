@@ -6,22 +6,16 @@
 #include <string>
 #include <vector>
 
-// "Might want to add type"
 typedef struct Variable {
     std::string name;
     int virtual_address;
     int size;
-    // use type or make 'total_size' and 'size' members
     std::string type; // char, short, int/float, long/double
 } Variable;
 
 typedef struct Process {
     uint32_t pid;
     std::vector<Variable *> variables;
-    // the last byte of used virtual memory taken up by variables
-    // start at 0
-//    int end_of_memory;
-//    int last_page;
 } Process;
 
 class Mmu {
