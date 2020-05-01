@@ -3,7 +3,7 @@
 #include "mmu.h"
 #include "pagetable.h"
 #include <cmath>
-
+#include <cstring>
 
 void printStartMessage(int page_size);
 
@@ -289,6 +289,9 @@ void set(int pid, std::string var_name, int offset, std::vector <std::string> va
         }
     }
     int physical_address = pageTable->getPhysicalAddress(pid, virtual_address);
+
+    // std::vector<double> new_values(values.begin(), values.end());
+
     if(type == "char"){
 //        std::vector<char> new_values;
     } else if(type == "short"){
@@ -296,9 +299,9 @@ void set(int pid, std::string var_name, int offset, std::vector <std::string> va
     } else if(type == "int"){
 //        std::vector<char> new_values;
     } else if(type == "long"){
-        std::vector<double> new_values(values.begin(), values.end());
+//        std::vector<double> new_values(values.begin(), values.end());
     }
-    memcpy(&memory[physical_address], &new_values, new_values.size())
+    std::memcpy(&memory[physical_address], &values, values.size());
     std::cout << "address: " << physical_address << std::endl;
 //    for (int i = 0; i < 10; i++) {
 //        memory[physical_address] = values[i];
