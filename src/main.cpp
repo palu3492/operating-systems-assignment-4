@@ -144,6 +144,11 @@ int main(int argc, char **argv) {
             } else if (command_data == "processes") {
                 mmu->printProcesses();
             } else {
+                arguments = splitBySpace(command_data);
+                int pid = std::stoi(arguments[0]);
+                std::string var_name = arguments[1];
+                printVariable(pid, var_name);
+
                 // <PID>:<var_name>
 
             }
@@ -278,16 +283,11 @@ int addVariable(int pid, std::string var_name, int size, std::string type, Mmu *
 }
 
 void set(int pid, std::string var_name, int offset, std::vector <std::string> values, Mmu *mmu, PageTable *pageTable, int page_size, uint8_t *memory) {
-    Process *process = mmu->getProcess(pid);
-    std::vector < Variable * > variables = process->variables;
-    int virtual_address;
-    std::string type;
-    for (int i = 0; i < variables.size(); i++) {
-        if (variables[i]->name == var_name) {
-            virtual_address = variables[i]->virtual_address;
-            type = variables[i]->type;
-        }
-    }
+
+    Variable* variable = mmu->getVariableFromProcess(pid, var_name);
+
+    int virtual_address = variable->virtual_address;
+    std::string type = variable->type;
     int physical_address = pageTable->getPhysicalAddress(pid, virtual_address);
 
     // std::vector<double> new_values(values.begin(), values.end());
@@ -338,4 +338,15 @@ std::vector <std::string> splitBySpace(std::string data) {
     return result;
 }
 
+void printVariable(int pid, std::string name){
+    Variable* variable = mmu->getVariableFromProcess(pid, var_name);
 
+    int virtual_address = variable->virtual_address;
+    int physical_address = pageTable->getPhysicalAddress(pid, virtual_address);
+
+    int size = variable->size;
+
+    std::vector<std::string> values;
+
+    std::memcpy(&values, &memory[physical_address], size);
+}

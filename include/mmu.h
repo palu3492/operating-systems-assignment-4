@@ -52,6 +52,8 @@ public:
     void printProcesses();
 
     Process *getProcess(int pid);
+
+    Variable *getVariableFromProcess(int pid, std::string name);
 };
 
 #endif // __MMU_H_

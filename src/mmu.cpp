@@ -100,6 +100,16 @@ Variable *Mmu::createVariable(std::string name, int address, int size, std::stri
     return var;
 }
 
+Variable *Mmu::getVariableFromProcess(int pid, std::string name){
+    Process *process = getProcess(pid);
+    std::vector<Variable*> variables = process->variables;
+    for (int i = 0; i < variables.size(); i++) {
+        if (variables[i]->name == var_name) {
+            return variables[i];
+        }
+    }
+}
+
 void Mmu::print() {
     int i, j;
 
