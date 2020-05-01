@@ -74,7 +74,7 @@ void PageTable::print() {
         std::string page_number;
         splitEntry(&key, &pid, &page_number);
 
-        std::cout << pid << " | ";
+        std::cout << " " << pid << " | ";
         std::cout << std::setw(11) << std::right << page_number << " | ";
         std::cout << std::setw(12) << std::right << frame << std::endl;
 

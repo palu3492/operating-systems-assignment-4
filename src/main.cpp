@@ -12,10 +12,9 @@ void create(int text_size, int data_size, Mmu *mmu, PageTable *pageTable, int pa
 void allocate(int pid, std::string var_name, std::string data_type, int number_of_elements, Mmu *mmu,
               PageTable *pageTable, int page_size);
 
-void set(int pid, std::string var_name, int offset, int *values, Mmu *mmu, PageTable *pageTable, int page_size,
-         uint8_t *memory);
+void set(int pid, std::string var_name, int offset, std::vector <std::string> values, Mmu *mmu, PageTable *pageTable, int page_size, uint8_t *memory);
 
-int addVariable(int pid, std::string var_name, int size, Mmu *mmu, PageTable *pageTable, int page_size);
+int addVariable(int pid, std::string var_name, int size, std::string type, Mmu *mmu, PageTable *pageTable, int page_size);
 
 void splitCommand(std::string *first, std::string *second);
 
@@ -132,6 +131,7 @@ int main(int argc, char **argv) {
                     values.push_back(arguments[i]);
                 }
 
+                set(PID, var_name, offset, values, mmu, pageTable, page_size, memory);
                 //set(1024, "var1", 0, values, mmu, pageTable, page_size, memory);
                 //int values[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
                 //set(1024, "var1", 0, values, mmu, pageTable, page_size, memory);
@@ -220,9 +220,9 @@ void create(int text_size, int data_size, Mmu *mmu, PageTable *pageTable, int pa
     std::cout << "pid: " << pid << std::endl;
 
     // Create <TEXT>, <GLOBALS>, and <STACK> variables
-    addVariable(pid, "<TEXT>", text_size, mmu, pageTable, page_size);
-    addVariable(pid, "<GLOBALS>", data_size, mmu, pageTable, page_size);
-    addVariable(pid, "<STACK>", stack_size, mmu, pageTable, page_size);
+    addVariable(pid, "<TEXT>", text_size, "char", mmu, pageTable, page_size);
+    addVariable(pid, "<GLOBALS>", data_size, "char", mmu, pageTable, page_size);
+    addVariable(pid, "<STACK>", stack_size, "char", mmu, pageTable, page_size);
 }
 
 /*
@@ -252,14 +252,14 @@ void allocate(int pid, std::string var_name, std::string data_type, int number_o
     }
     // std::cout << "number of bytes: " << number_of_bytes << std::endl;
 
-    addVariable(pid, var_name, number_of_bytes, mmu, pageTable, page_size);
+    addVariable(pid, var_name, number_of_bytes, data_type, mmu, pageTable, page_size);
 }
 
-int addVariable(int pid, std::string var_name, int size, Mmu *mmu, PageTable *pageTable, int page_size) {
+int addVariable(int pid, std::string var_name, int size, std::string type, Mmu *mmu, PageTable *pageTable, int page_size) {
     // Use first fit algorithm within a page when allocating new data
 
     // Add variable to process
-    int var_virtual_address = mmu->addVariableToProcess(pid, var_name, size);
+    int var_virtual_address = mmu->addVariableToProcess(pid, var_name, size, type);
     std::cout << var_virtual_address << std::endl;
 
     // Add pages needed to store variable
@@ -277,19 +277,32 @@ int addVariable(int pid, std::string var_name, int size, Mmu *mmu, PageTable *pa
     }
 }
 
-void set(int pid, std::string var_name, int offset, int *values, Mmu *mmu, PageTable *pageTable, int page_size, uint8_t *memory) {
+void set(int pid, std::string var_name, int offset, std::vector <std::string> values, Mmu *mmu, PageTable *pageTable, int page_size, uint8_t *memory) {
     Process *process = mmu->getProcess(pid);
     std::vector < Variable * > variables = process->variables;
     int virtual_address;
+    std::string type;
     for (int i = 0; i < variables.size(); i++) {
         if (variables[i]->name == var_name) {
             virtual_address = variables[i]->virtual_address;
+            type = variables[i]->type;
         }
     }
     int physical_address = pageTable->getPhysicalAddress(pid, virtual_address);
-    for (int i = 0; i < 10; i++) {
-        memory[physical_address] = values[i];
+    if(type == "char"){
+//        std::vector<char> new_values;
+    } else if(type == "short"){
+//        std::vector<char> new_values;
+    } else if(type == "int"){
+//        std::vector<char> new_values;
+    } else if(type == "long"){
+        std::vector<double> new_values(values.begin(), values.end());
     }
+    memcpy(&memory[physical_address], &new_values, new_values.size())
+    std::cout << "address: " << physical_address << std::endl;
+//    for (int i = 0; i < 10; i++) {
+//        memory[physical_address] = values[i];
+//    }
 }
 
 //Splits the input command at the first space into a command and its arguments 

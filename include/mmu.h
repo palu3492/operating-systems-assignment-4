@@ -12,7 +12,7 @@ typedef struct Variable {
     int virtual_address;
     int size;
     // use type or make 'total_size' and 'size' members
-    std::string type; // char, short, int, long
+    std::string type; // char, short, int/float, long/double
 } Variable;
 
 typedef struct Process {
@@ -30,7 +30,7 @@ private:
     int _max_size;
     std::vector<Process *> _processes;
 
-    Variable *createVariable(std::string name, int address, int size);
+    Variable *createVariable(std::string name, int address, int size, std::string type);
 
     int calculateVirtualAddress(Process* process, int size);
 
@@ -43,7 +43,7 @@ public:
 
     uint32_t createProcess();
 
-    int addVariableToProcess(int pid, std::string name, int size);
+    int addVariableToProcess(int pid, std::string name, int size, std::string type);
 
     std::vector<Variable *> getVariablesFromProcess(int pid);
 

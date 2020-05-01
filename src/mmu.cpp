@@ -37,12 +37,12 @@ Process *Mmu::getProcess(int pid) {
     }
 }
 
-int Mmu::addVariableToProcess(int pid, std::string name, int size) {
+int Mmu::addVariableToProcess(int pid, std::string name, int size, std::string type) {
     Process* process = getProcess(pid);
 
     Variable *var;
     int virtual_address = calculateVirtualAddress(process, size);
-    var = createVariable(name, virtual_address, size);
+    var = createVariable(name, virtual_address, size, type);
 
     process->variables.push_back(var);
 
@@ -90,12 +90,13 @@ Variable* Mmu::findLastFreeSpaceVar(std::vector<Variable *> variables){
     return last_free_space_var;
 }
 
-Variable *Mmu::createVariable(std::string name, int address, int size) {
+Variable *Mmu::createVariable(std::string name, int address, int size, std::string type) {
     std::cout << name << " created at virtual address " << address << std::endl;
     Variable *var = new Variable();
     var->name = name;
     var->virtual_address = address;
     var->size = size;
+    var->type = type;
     return var;
 }
 
