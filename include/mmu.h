@@ -2,6 +2,7 @@
 #define __MMU_H_ // only import once
 
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <vector>
 
@@ -33,7 +34,7 @@ private:
 
     int calculateVirtualAddress(Process* process, int size);
 
-    Variable* findLastFreeSpaceVar(std::vector<Variable *> variables)
+    Variable* findLastFreeSpaceVar(std::vector<Variable *> variables);
 
 public:
     Mmu(int memory_size);

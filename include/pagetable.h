@@ -2,6 +2,7 @@
 #define __PAGETABLE_H_
 
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <map>
 #include <vector>
@@ -23,6 +24,8 @@ public:
     int getPhysicalAddress(uint32_t pid, int virtual_address);
 
     void print();
+
+    void splitEntry(std::string *entry, std::string *pid, std::string *page_number);
 };
 
 #endif // __PAGETABLE_H_

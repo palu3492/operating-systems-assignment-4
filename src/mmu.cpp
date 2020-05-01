@@ -1,4 +1,5 @@
 #include "mmu.h"
+#include <iomanip>
 
 Mmu::Mmu(int memory_size) {
     _next_pid = 1024;
@@ -109,10 +110,10 @@ void Mmu::print() {
             std::string name = _processes[i]->variables[j]->name;
             if (name != "<FREE_SPACE>") {
                 std::cout << " " << _processes[i]->pid << " | ";
-                std::cout << name << " | ";
-                // TODO: Hex?
-                std::cout << _processes[i]->variables[j]->virtual_address << " | ";
-                std::cout << _processes[i]->variables[j]->size << std::endl;
+                std::cout << std::setw(13) << std::left << name << " | ";
+                // TODO: convert virtual address to hex
+                std::cout << std::setw(12) << std::right << _processes[i]->variables[j]->virtual_address << " | ";
+                std::cout << std::setw(10) << std::right << _processes[i]->variables[j]->size << std::endl;
             }
         }
     }

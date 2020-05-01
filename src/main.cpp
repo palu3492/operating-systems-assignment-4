@@ -256,26 +256,25 @@ void allocate(int pid, std::string var_name, std::string data_type, int number_o
 }
 
 int addVariable(int pid, std::string var_name, int size, Mmu *mmu, PageTable *pageTable, int page_size) {
-    // TODO: Use first fit algorithm within a page when allocating new data
-
-    // Get process using pid
-//    Process *process = mmu->getProcess(pid);
-
-    // Add pages needed to store variable
-//    int number_of_pages = size / page_size; // integer division
-//    if (size % page_size > 0) {
-//        number_of_pages++;
-//    }
-    // std::cout << "size: " << size << " page_size " << page_size  << " number of pages: " << number_of_pages << std::endl;
-//    for (int page_number = 0; page_number < number_of_pages; page_number++) {
-//        pageTable->addEntry(pid, process->last_page);
-//        process->last_page++;
-//    }
+    // Use first fit algorithm within a page when allocating new data
 
     // Add variable to process
-//    int bytes_used = number_of_pages * page_size;
     int var_virtual_address = mmu->addVariableToProcess(pid, var_name, size);
     std::cout << var_virtual_address << std::endl;
+
+    // Add pages needed to store variable
+    int starting_page = (var_virtual_address / page_size) - 1;
+    if(starting_page < 0){
+        starting_page = 0;
+    }
+    int reverse_offset = page_size - (var_virtual_address % page_size);
+    int number_of_pages = ((size - reverse_offset) / page_size) + 1;
+//    std::cout << starting_page <<std::endl;
+//    std::cout << reverse_offset <<std::endl;
+//    std::cout << number_of_pages <<std::endl;
+    for(int i = 0; i <= number_of_pages; i++){
+        pageTable->addEntry(pid, starting_page + i);
+    }
 }
 
 void set(int pid, std::string var_name, int offset, int *values, Mmu *mmu, PageTable *pageTable, int page_size, uint8_t *memory) {
