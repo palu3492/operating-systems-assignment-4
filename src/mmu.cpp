@@ -62,9 +62,31 @@ int Mmu::calculateVirtualAddress(Process* process, int size){
             total_free_space = 0;
         }
         if(total_free_space >= size){
-            return free_space_var->virtual_address;
+            int virtual_address = free_space_var->virtual_address;
+            free_space_var->virtual_address += size;
+            free_space_var->size -= size; // if size is zero that should be fine, preferably delete variable
+            return virtual_address;
         }
     }
+    // If there is no <FREE_SPACE> variable with enough room for variable
+    Variable* last_free_space_var = findLastFreeSpaceVar(variables);
+    int virtual_address = last_free_space_var->virtual_address;
+    free_space_var->virtual_address += size;
+    int offset = _max_size % free_space_var->virtual_address;
+    free_space_var->size = _max_size - offset;
+    return virtual_address;
+}
+
+Variable* Mmu::findLastFreeSpaceVar(std::vector<Variable *> variables){
+    Variable* last_free_space_var = NULL;
+    for (int i = 0; i < variables.size(); i++) {
+        if (variables[i]->name == "<FREE_SPACE>") {
+            if (last_free_space_var == NULL || variables[i]->virtual_address > last_free_space_var->virtual_address) {
+                last_free_space_var = variables[i];
+            }
+        }
+    }
+    return last_free_space_var;
 }
 
 Variable *Mmu::createVariable(std::string name, int address, int size) {
