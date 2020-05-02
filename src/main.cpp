@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
 
     // while the user doesn't type 'exit' command, keep asking for commands
     while (command != "exit") {
-        
+
         arguments = splitBySpace(command_data);
 
         // Each command is handled in its own function
@@ -146,7 +146,17 @@ int main(int argc, char **argv) {
 
             }
         } else if (command == "free") {
-            
+            // free <PID> <var_name>
+
+            if (arguments.size() != 2) {
+                std::cout << command << " " << command_data << " is not a valid command." << std::endl;
+                std::cout << command << " " << command_data << " does not have enough arguments." << std::endl;
+
+            } else {
+                int pid = std::stoi(arguments[0]);
+                std::string var_name = arguments[1];
+                free(pid, var_name, mmu, pageTable);
+            }
         } else if (command == "terminate") {
             
         } else {
@@ -395,8 +405,8 @@ void printVariable(int pid, std::string name, Mmu *mmu, PageTable *pageTable, ui
             }
             std::cout << values[i] << ", ";
         }
-
     } else if(type == "long"){
+        // TODO: problem printing longs, maybe problem setting them
         type_size = 8;
         number_of_values = size / type_size;
         long values[number_of_values];
@@ -412,6 +422,12 @@ void printVariable(int pid, std::string name, Mmu *mmu, PageTable *pageTable, ui
     }
     std::cout << std::endl;
 
+}
 
-
+void free(int pid, std::string name, Mmu *mmu, PageTable *pageTable){
+    Variable *variable = mmu->getVariableFromProcess(pid, name);
+    // rename variable to <FREE_SPACE>
+    // if free space variables around it then join them
+    // update page table, some pages may no longer be in use
+    // update frames vector, some frames may no longer be in use
 }

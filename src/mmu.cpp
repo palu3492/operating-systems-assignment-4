@@ -63,28 +63,7 @@ int Mmu::calculateVirtualAddress(Process* process, int size){
             }
         }
     }
-    // If there is no <FREE_SPACE> variable with enough room for variable
-//    Variable* last_free_space_var = findLastFreeSpaceVar(variables);
-//    int virtual_address = last_free_space_var->virtual_address;
-//    free_space_var->virtual_address += size;
-//    int offset = _max_size % free_space_var->virtual_address;
-//    free_space_var->size = _max_size - offset; // should be page_size
-//    return virtual_address;
 }
-
-/*
-Variable* Mmu::findLastFreeSpaceVar(std::vector<Variable *> variables){
-    Variable* last_free_space_var = NULL;
-    for (int i = 0; i < variables.size(); i++) {
-        if (variables[i]->name == "<FREE_SPACE>") {
-            if (last_free_space_var == NULL || variables[i]->virtual_address > last_free_space_var->virtual_address) {
-                last_free_space_var = variables[i];
-            }
-        }
-    }
-    return last_free_space_var;
-}
-*/
 
 Variable *Mmu::createVariable(std::string name, int address, int size, std::string type) {
 //    std::cout << name << " created at virtual address " << address << std::endl;
@@ -101,7 +80,6 @@ Variable *Mmu::getVariableFromProcess(int pid, std::string name){
     std::vector<Variable*> variables = process->variables;
     for (int i = 0; i < variables.size(); i++) {
         if (variables[i]->name == name) {
-//            std::cout << "returning " << variables[i]->name << std::endl;
             return variables[i];
         }
     }
@@ -114,7 +92,6 @@ void Mmu::print() {
     std::cout << "------+---------------+--------------+------------" << std::endl;
     for (i = 0; i < _processes.size(); i++) {
         for (j = 0; j < _processes[i]->variables.size(); j++) {
-            // TODO: print all variables (excluding <FREE_SPACE> entries)
             std::string name = _processes[i]->variables[j]->name;
             if (name != "<FREE_SPACE>") {
                 std::cout << " " << _processes[i]->pid << " | ";
