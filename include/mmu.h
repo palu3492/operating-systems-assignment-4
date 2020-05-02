@@ -48,6 +48,8 @@ public:
     Process *getProcess(int pid);
 
     Variable *getVariableFromProcess(int pid, std::string name);
+
+    void joinFreeSpace(int pid);
 };
 
 #endif // __MMU_H_

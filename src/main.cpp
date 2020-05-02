@@ -273,7 +273,7 @@ int addVariable(int pid, std::string var_name, int size, std::string type, Mmu *
     int var_virtual_address = mmu->addVariableToProcess(pid, var_name, size, type);
 
     // Add pages needed to store variable
-    int starting_page = (var_virtual_address / page_size) - 1;
+    int starting_page = var_virtual_address / page_size;
     if(starting_page < 0){
         starting_page = 0;
     }
@@ -440,29 +440,35 @@ void free(int pid, std::string name, Mmu *mmu, PageTable *pageTable, int page_si
     // remove table entries and frames
     for(int page = first_page_number+1; page < last_page_number; page++){
         pageTable->removeEntry(pid, page);
+        std::cout << "remove " << page << std::endl;
     }
 
     // remove first and last pages if there are no other variables on those pages
     Process *process = mmu->getProcess(pid);
     std::vector<Variable*> variables = process->variables;
+
     bool first_has_variables = false;
     bool last_has_variables = false;
+
     for (int i = 0; i < variables.size(); i++) {
         int virtual_address = variables[i]->virtual_address;
         int page = virtual_address / page_size;
         if (page == first_page_number) {
             first_has_variables = true;
-        } else if (page == last_page_number) {
+        }
+        if (page == last_page_number) {
             last_has_variables = true;
         }
     }
     if(!first_has_variables){
         pageTable->removeEntry(pid, first_page_number);
+        std::cout << "remove first " << first_page_number << std::endl;
     }
     if(!last_has_variables){
         pageTable->removeEntry(pid, last_page_number);
+        std::cout << "remove last " << last_page_number << std::endl;
     }
 
-
     // find all free space and join if possible
+    mmu->joinFreeSpace(pid);
 }

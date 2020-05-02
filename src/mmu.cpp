@@ -56,8 +56,8 @@ int Mmu::calculateVirtualAddress(Process* process, int size){
                 int virtual_address = variables[i]->virtual_address;
                 // change free space address
                 variables[i]->virtual_address += size;
-                // TODO: remove variable if size == 0
                 // update free space size
+                // TODO: remove variable if size == 0
                 variables[i]->size -= size;
                 return virtual_address;
             }
@@ -81,6 +81,23 @@ Variable *Mmu::getVariableFromProcess(int pid, std::string name){
     for (int i = 0; i < variables.size(); i++) {
         if (variables[i]->name == name) {
             return variables[i];
+        }
+    }
+}
+
+void Mmu::joinFreeSpace(int pid){
+    Process *process = getProcess(pid);
+    std::vector<Variable*> variables = process->variables;
+    Variable* prev_free_space_var = NULL;
+    for (int i = 0; i < variables.size(); i++) {
+        if (variables[i]->name == "<FREE_SPACE>") {
+            if(prev_free_space_var){
+                prev_free_space_var->size += variables[i]->size;
+                // TODO: remove this variable instead of setting size to zero
+                variables[i]->size = 0;
+            } else {
+                prev_free_space_var = variables[i];
+            }
         }
     }
 }
