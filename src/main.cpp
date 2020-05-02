@@ -22,6 +22,8 @@ std::vector <std::string> splitBySpace(std::string data);
 
 void printVariable(int pid, std::string name, Mmu *mmu, PageTable *pageTable, uint8_t *memory);
 
+void free(int pid, std::string name, Mmu *mmu, PageTable *pageTable);
+
 /*
 You will not actually be spawning processes that consume memory.
 Rather you will be creating simulated "processes" that each make
@@ -426,6 +428,7 @@ void printVariable(int pid, std::string name, Mmu *mmu, PageTable *pageTable, ui
 
 void free(int pid, std::string name, Mmu *mmu, PageTable *pageTable){
     Variable *variable = mmu->getVariableFromProcess(pid, name);
+    // make sure variable exists first
     // rename variable to <FREE_SPACE>
     // if free space variables around it then join them
     // update page table, some pages may no longer be in use
