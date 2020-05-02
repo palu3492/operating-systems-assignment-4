@@ -13,10 +13,8 @@ Mmu::~Mmu() {
 uint32_t Mmu::createProcess() {
     Process *newProcess = new Process();
     newProcess->pid = _next_pid; // Assign a PID
-//    newProcess->last_page = 0;
-//    newProcess->end_of_memory = 0;
 
-    // Initialize process with empty FREE_SPACE variable which is the size of a page
+    // Initialize process with empty FREE_SPACE variable which is the size of memory
     Variable *var = new Variable();
     var->name = "<FREE_SPACE>";
     var->virtual_address = 0;
@@ -51,31 +49,27 @@ int Mmu::addVariableToProcess(int pid, std::string name, int size, std::string t
 
 int Mmu::calculateVirtualAddress(Process* process, int size){
     std::vector<Variable *> variables = process->variables;
-    int total_free_space = 0;
-    Variable* free_space_var;
     for (int i = 0; i < variables.size(); i++) {
-        if(variables[i]->name == "<FREE_SPACE>"){
-            if(total_free_space == 0){
-                free_space_var = variables[i];
+        if(variables[i]->name == "<FREE_SPACE>") {
+            // Will variable fit in this free space?
+            if (variables[i]->size >= size) {
+                int virtual_address = variables[i]->virtual_address;
+                // change free space address
+                variables[i]->virtual_address += size;
+                // TODO: remove variable if size == 0
+                // update free space size
+                variables[i]->size -= size;
+                return virtual_address;
             }
-            total_free_space += variables[i]->size;
-        } else {
-            total_free_space = 0;
-        }
-        if(total_free_space >= size){
-            int virtual_address = free_space_var->virtual_address;
-            free_space_var->virtual_address += size;
-            free_space_var->size -= size; // if size is zero that should be fine, preferably delete variable
-            return virtual_address;
         }
     }
     // If there is no <FREE_SPACE> variable with enough room for variable
-    Variable* last_free_space_var = findLastFreeSpaceVar(variables);
-    int virtual_address = last_free_space_var->virtual_address;
-    free_space_var->virtual_address += size;
-    int offset = _max_size % free_space_var->virtual_address;
-    free_space_var->size = _max_size - offset; // should be page_size
-    return virtual_address;
+//    Variable* last_free_space_var = findLastFreeSpaceVar(variables);
+//    int virtual_address = last_free_space_var->virtual_address;
+//    free_space_var->virtual_address += size;
+//    int offset = _max_size % free_space_var->virtual_address;
+//    free_space_var->size = _max_size - offset; // should be page_size
+//    return virtual_address;
 }
 
 Variable* Mmu::findLastFreeSpaceVar(std::vector<Variable *> variables){
@@ -91,7 +85,7 @@ Variable* Mmu::findLastFreeSpaceVar(std::vector<Variable *> variables){
 }
 
 Variable *Mmu::createVariable(std::string name, int address, int size, std::string type) {
-    std::cout << name << " created at virtual address " << address << std::endl;
+//    std::cout << name << " created at virtual address " << address << std::endl;
     Variable *var = new Variable();
     var->name = name;
     var->virtual_address = address;

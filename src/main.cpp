@@ -91,8 +91,8 @@ int main(int argc, char **argv) {
             } else {
                 int text_size = std::stoi(arguments[0]);
                 int data_size = std::stoi(arguments[1]);
-                std::cout << "text_size: " << text_size << std::endl;
-                std::cout << "data_size: " << data_size << std::endl;
+//                std::cout << "text_size: " << text_size << std::endl;
+//                std::cout << "data_size: " << data_size << std::endl;
 
                 create(text_size, data_size, mmu, pageTable, page_size);
                 // create(2048, 1024, mmu, pageTable, page_size);
@@ -221,7 +221,7 @@ void create(int text_size, int data_size, Mmu *mmu, PageTable *pageTable, int pa
 
     // Create process and get returned the pid (process id)
     int pid = mmu->createProcess(); // pid starts at 1024
-    std::cout << "pid: " << pid << std::endl;
+    std::cout << pid << std::endl;
 
     // Create <TEXT>, <GLOBALS>, and <STACK> variables
     addVariable(pid, "<TEXT>", text_size, "char", mmu, pageTable, page_size);
@@ -264,7 +264,7 @@ int addVariable(int pid, std::string var_name, int size, std::string type, Mmu *
 
     // Add variable to process
     int var_virtual_address = mmu->addVariableToProcess(pid, var_name, size, type);
-    std::cout << var_virtual_address << std::endl;
+//    std::cout << var_virtual_address << std::endl;
 
     // Add pages needed to store variable
     int starting_page = (var_virtual_address / page_size) - 1;
