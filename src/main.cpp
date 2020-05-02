@@ -22,7 +22,7 @@ std::vector <std::string> splitBySpace(std::string data);
 
 void printVariable(int pid, std::string name, Mmu *mmu, PageTable *pageTable, uint8_t *memory);
 
-void free(int pid, std::string name, Mmu *mmu, PageTable *pageTable);
+void free(int pid, std::string name, Mmu *mmu, PageTable *pageTable, int page_size);
 
 /*
 You will not actually be spawning processes that consume memory.
@@ -157,7 +157,7 @@ int main(int argc, char **argv) {
             } else {
                 int pid = std::stoi(arguments[0]);
                 std::string var_name = arguments[1];
-                free(pid, var_name, mmu, pageTable);
+                free(pid, var_name, mmu, pageTable, page_size);
             }
         } else if (command == "terminate") {
             
@@ -426,11 +426,43 @@ void printVariable(int pid, std::string name, Mmu *mmu, PageTable *pageTable, ui
 
 }
 
-void free(int pid, std::string name, Mmu *mmu, PageTable *pageTable){
+void free(int pid, std::string name, Mmu *mmu, PageTable *pageTable, int page_size){
+    // Maybe check if variable exists first
     Variable *variable = mmu->getVariableFromProcess(pid, name);
-    // make sure variable exists first
-    // rename variable to <FREE_SPACE>
-    // if free space variables around it then join them
-    // update page table, some pages may no longer be in use
-    // update frames vector, some frames may no longer be in use
+    variable->name = "<FREE_SPACE>";
+
+    int size = variable->size;
+    int virtual_address = variable->virtual_address;
+
+    int first_page_number = virtual_address / page_size;
+    int last_page_number = (virtual_address + size) / page_size;
+
+    // remove table entries and frames
+    for(int page = first_page_number+1; page < last_page_number; page++){
+        pageTable->removeEntry(pid, page);
+    }
+
+    // remove first and last pages if there are no other variables on those pages
+    Process *process = mmu->getProcess(pid);
+    std::vector<Variable*> variables = process->variables;
+    bool first_has_variables = false;
+    bool last_has_variables = false;
+    for (int i = 0; i < variables.size(); i++) {
+        int virtual_address = variables[i]->virtual_address;
+        int page = virtual_address / page_size;
+        if (page == first_page_number) {
+            first_has_variables = true;
+        } else if (page == last_page_number) {
+            last_has_variables = true;
+        }
+    }
+    if(!first_has_variables){
+        pageTable->removeEntry(pid, first_page_number);
+    }
+    if(!last_has_variables){
+        pageTable->removeEntry(pid, last_page_number);
+    }
+
+
+    // find all free space and join if possible
 }

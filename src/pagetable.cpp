@@ -36,13 +36,25 @@ void PageTable::addEntry(uint32_t pid, int page_number) {
     }
 }
 
+void PageTable::removeEntry(uint32_t pid, int page_number) {
+    std::string entry = std::to_string(pid) + "|" + std::to_string(page_number);
+    int frame = _table[entry];
+    // remove entry
+    _table.erase(entry);
+    // remove frame
+    for(int i = 0; i < _frames.size(); i++){
+        if(_frames[i] == frame){
+            _frames.erase(_frames.begin() + i);
+            break;
+        }
+    }
+}
+
 int PageTable::getPhysicalAddress(uint32_t pid, int virtual_address) {
     // Convert virtual address to page_number and page_offset
-    int page_number = 0;
-    int page_offset = 0;
 
-    page_number = virtual_address / _page_size; // 11 / 5 = 2
-    page_offset = virtual_address % _page_size; // left over is offset = 1
+    int page_number = virtual_address / _page_size; // 11 / 5 = 2
+    int page_offset = virtual_address % _page_size; // left over is offset = 1
 
     // Combination of pid and page number act as the key to look up frame number
     std::string entry = std::to_string(pid) + "|" + std::to_string(page_number);
