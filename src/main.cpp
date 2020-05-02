@@ -451,22 +451,26 @@ void free(int pid, std::string name, Mmu *mmu, PageTable *pageTable, int page_si
     bool last_has_variables = false;
 
     for (int i = 0; i < variables.size(); i++) {
-        int virtual_address = variables[i]->virtual_address;
-        int page = virtual_address / page_size;
-        if (page == first_page_number) {
-            first_has_variables = true;
-        }
-        if (page == last_page_number) {
-            last_has_variables = true;
+        if(variables[i]->name != "<FREE_SPACE>") {
+            int virtual_address = variables[i]->virtual_address;
+            int size = variables[i]->size;
+            int first_page = virtual_address / page_size;
+            int last_page = (virtual_address + size) / page_size;
+            if (first_page == first_page_number || last_page == first_page_number) {
+                first_has_variables = true;
+            }
+            if (first_page == last_page_number || last_page == last_page_number) {
+                last_has_variables = true;
+            }
         }
     }
     if(!first_has_variables){
         pageTable->removeEntry(pid, first_page_number);
-        std::cout << "remove first " << first_page_number << std::endl;
+//        std::cout << "remove first " << first_page_number << std::endl;
     }
     if(!last_has_variables){
         pageTable->removeEntry(pid, last_page_number);
-        std::cout << "remove last " << last_page_number << std::endl;
+//        std::cout << "remove last " << last_page_number << std::endl;
     }
 
     // find all free space and join if possible
