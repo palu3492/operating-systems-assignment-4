@@ -74,15 +74,12 @@ int main(int argc, char **argv) {
 
     // while the user doesn't type 'exit' command, keep asking for commands
     while (command != "exit") {
-        // Handle commands
-
-        //empty arguments vector
-        arguments.clear();
+        
+        arguments = splitBySpace(command_data);
 
         // Each command is handled in its own function
         if (command == "create") {
             // create <text_size> <data_size>
-            arguments = splitBySpace(command_data);
             if (arguments.size() != 2) {
                 std::cout << command << " " << command_data << " is not a valid command." << std::endl;
                 std::cout << command << " " << command_data << " does not have the correct number of arguments."
@@ -99,7 +96,6 @@ int main(int argc, char **argv) {
             }
         } else if (command == "allocate") {
             // allocate <PID> <var_name> <data_type> <number_of_elements>
-            arguments = splitBySpace(command_data);
             if (arguments.size() != 4) {
                 std::cout << command << " " << command_data << " is not a valid command." << std::endl;
                 std::cout << command << " " << command_data << " does not have the correct number of arguments."
@@ -116,7 +112,6 @@ int main(int argc, char **argv) {
             }
         } else if (command == "set") {
             // set <PID> <var_name> <offset> <value_0> <value_1> <value_2> ... <value_N>
-            arguments = splitBySpace(command_data);
             if (arguments.size() < 4) {
                 std::cout << command << " " << command_data << " is not a valid command." << std::endl;
                 std::cout << command << " " << command_data << " does not have enough arguments." << std::endl;
@@ -142,7 +137,6 @@ int main(int argc, char **argv) {
             } else if (command_data == "processes") {
                 mmu->printProcesses();
             } else {
-                arguments = splitBySpace(command_data);
                 int pid = std::stoi(arguments[0]);
                 std::string var_name = arguments[1];
 
@@ -256,7 +250,8 @@ void allocate(int pid, std::string var_name, std::string data_type, int number_o
     }
     // std::cout << "number of bytes: " << number_of_bytes << std::endl;
 
-    addVariable(pid, var_name, number_of_bytes, data_type, mmu, pageTable, page_size);
+    int var_virtual_address = addVariable(pid, var_name, number_of_bytes, data_type, mmu, pageTable, page_size);
+    std::cout << var_virtual_address << std::endl;
 }
 
 int addVariable(int pid, std::string var_name, int size, std::string type, Mmu *mmu, PageTable *pageTable, int page_size) {
@@ -264,14 +259,15 @@ int addVariable(int pid, std::string var_name, int size, std::string type, Mmu *
 
     // Add variable to process
     int var_virtual_address = mmu->addVariableToProcess(pid, var_name, size, type);
-//    std::cout << var_virtual_address << std::endl;
 
     // Add pages needed to store variable
     int starting_page = (var_virtual_address / page_size) - 1;
     if(starting_page < 0){
         starting_page = 0;
     }
+    // how much space it takes up on page that it partially fills
     int reverse_offset = page_size - (var_virtual_address % page_size);
+    // number of pages past starting page that it needs to fit whole variable
     int number_of_pages = ((size - reverse_offset) / page_size) + 1;
 //    std::cout << starting_page <<std::endl;
 //    std::cout << reverse_offset <<std::endl;
@@ -279,6 +275,8 @@ int addVariable(int pid, std::string var_name, int size, std::string type, Mmu *
     for(int i = 0; i <= number_of_pages; i++){
         pageTable->addEntry(pid, starting_page + i);
     }
+
+    return var_virtual_address;
 }
 
 void set(int pid, std::string var_name, int offset, std::vector <std::string> values, Mmu *mmu, PageTable *pageTable, int page_size, uint8_t *memory) {
@@ -289,31 +287,31 @@ void set(int pid, std::string var_name, int offset, std::vector <std::string> va
     std::string type = variable->type;
     int physical_address = pageTable->getPhysicalAddress(pid, virtual_address);
 
-    std::cout << "va: " << virtual_address << " pa: " << physical_address << std::endl;
-
-    // std::vector<double> new_values(values.begin(), values.end());
-
-    std::vector<int> new_values;
-
     if(type == "char"){
-//        std::vector<char> new_values;
+        std::vector<char> new_values;
+        for(int i = 0; i < values.size(); i++){
+            new_values.push_back(values[i].at(0));
+        }
+        std::memcpy(&memory[physical_address], new_values.data(), new_values.size());
     } else if(type == "short"){
-//        std::vector<char> new_values;
+        std::vector<short> new_values;
+        for(int i = 0; i < values.size(); i++){
+            new_values.push_back(std::stod(values[i]));
+        }
+        std::memcpy(&memory[physical_address], new_values.data(), new_values.size()*2);
     } else if(type == "int"){
+        std::vector<int> new_values;
         for(int i = 0; i < values.size(); i++){
             new_values.push_back(std::stoi(values[i]));
         }
+        std::memcpy(&memory[physical_address], new_values.data(), new_values.size()*4);
     } else if(type == "long"){
-//        std::vector<double> new_values(values.begin(), values.end());
+        std::vector<double> new_values;
+        for(int i = 0; i < values.size(); i++){
+            new_values.push_back(std::stod(values[i]));
+        }
+        std::memcpy(&memory[physical_address], new_values.data(), new_values.size()*8);
     }
-
-    std::cout << "address: " << physical_address << std::endl;
-
-    std::memcpy(&memory[physical_address], new_values.data(), new_values.size()*4);
-
-//    for (int i = 0; i < 10; i++) {
-//        memory[physical_address] = values[i];
-//    }
 }
 
 //Splits the input command at the first space into a command and its arguments 
@@ -324,8 +322,8 @@ void splitCommand(std::string *first, std::string *second) {
         *second = first->substr(pos + 1);
         *first = first->substr(0, pos);
     }
-    std::cout << "Command: " << *first << std::endl;
-    std::cout << "Command Data: " << *second << std::endl;
+//    std::cout << "Command: " << *first << std::endl;
+//    std::cout << "Command Data: " << *second << std::endl;
 }
 
 //Splits the input command arguments with a space delimiter
@@ -348,29 +346,72 @@ std::vector <std::string> splitBySpace(std::string data) {
 
 void printVariable(int pid, std::string name, Mmu *mmu, PageTable *pageTable, uint8_t *memory){
 
-    std::cout << "pid: " << pid << " name: " << name << std::endl;
     Variable* variable = mmu->getVariableFromProcess(pid, name);
 
     int virtual_address = variable->virtual_address;
     int physical_address = pageTable->getPhysicalAddress(pid, virtual_address);
-    std::cout << "va: " << virtual_address << " pa: " << physical_address << std::endl;
 
     int size = variable->size;
-    std::cout << "size: " << size << std::endl;
 
-    // std::vector<int> values;
+    std::string type = variable->type;
 
-    int values[size/4];
+    int type_size = 1;
+    int number_of_values;
+    if(type == "char") {
+        number_of_values = size / type_size;
+        char values[number_of_values];
+        std::memcpy(values, &memory[physical_address], size);
 
-    // std::copy(&memory + physical_address, &memory + physical_address + size, values.begin());
+        for(int i = 0; i < number_of_values; i++){
+            if(i > 3){
+                std::cout << "... [" << number_of_values-i << " items]";
+                break;
+            }
+            std::cout << values[i] << ", ";
+        }
+    } else if(type == "short"){
+        type_size = 2;
+        number_of_values = size / type_size;
+        short values[number_of_values];
+        std::memcpy(values, &memory[physical_address], size);
 
-//     std::memcpy(&values, &memory + physical_address, size);
-     std::memcpy(values, &memory[physical_address], size);
+        for(int i = 0; i < number_of_values; i++){
+            if(i > 3){
+                std::cout << "... [" << number_of_values-i << " items]";
+                break;
+            }
+            std::cout << values[i] << ", ";
+        }
+    } else if(type == "int"){
+        type_size = 4;
+        number_of_values = size / type_size;
+        int values[number_of_values];
+        std::memcpy(values, &memory[physical_address], size);
 
-//    std::cout << "values size: " << values.size() << std::endl;
+        for(int i = 0; i < number_of_values; i++){
+            if(i > 3){
+                std::cout << "... [" << number_of_values-i << " items]";
+                break;
+            }
+            std::cout << values[i] << ", ";
+        }
 
-    for(int i = 0; i < 3; i++){
-        std::cout << values[i] << ", ";
+    } else if(type == "long"){
+        type_size = 8;
+        number_of_values = size / type_size;
+        long values[number_of_values];
+        std::memcpy(values, &memory[physical_address], size);
+
+        for(int i = 0; i < number_of_values; i++){
+            if(i > 3){
+                std::cout << "... [" << number_of_values-i << " items]";
+                break;
+            }
+            std::cout << values[i] << ", ";
+        }
     }
     std::cout << std::endl;
+
+
+
 }

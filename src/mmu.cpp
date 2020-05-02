@@ -72,6 +72,7 @@ int Mmu::calculateVirtualAddress(Process* process, int size){
 //    return virtual_address;
 }
 
+/*
 Variable* Mmu::findLastFreeSpaceVar(std::vector<Variable *> variables){
     Variable* last_free_space_var = NULL;
     for (int i = 0; i < variables.size(); i++) {
@@ -83,6 +84,7 @@ Variable* Mmu::findLastFreeSpaceVar(std::vector<Variable *> variables){
     }
     return last_free_space_var;
 }
+*/
 
 Variable *Mmu::createVariable(std::string name, int address, int size, std::string type) {
 //    std::cout << name << " created at virtual address " << address << std::endl;
@@ -99,7 +101,7 @@ Variable *Mmu::getVariableFromProcess(int pid, std::string name){
     std::vector<Variable*> variables = process->variables;
     for (int i = 0; i < variables.size(); i++) {
         if (variables[i]->name == name) {
-            std::cout << "returning " << variables[i]->name << std::endl;
+//            std::cout << "returning " << variables[i]->name << std::endl;
             return variables[i];
         }
     }
