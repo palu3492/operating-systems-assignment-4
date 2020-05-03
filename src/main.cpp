@@ -304,24 +304,29 @@ void set(int pid, std::string var_name, int offset, std::vector <std::string> va
         for(int i = 0; i < values.size(); i++){
             new_values.push_back(values[i].at(0));
         }
+        physical_address += (offset * 1);
         std::memcpy(&memory[physical_address], new_values.data(), new_values.size());
     } else if(type == "short"){
         std::vector<short> new_values;
         for(int i = 0; i < values.size(); i++){
             new_values.push_back(std::stod(values[i]));
         }
+        physical_address += (offset * 2);
         std::memcpy(&memory[physical_address], new_values.data(), new_values.size()*2);
     } else if(type == "int"){
         std::vector<int> new_values;
         for(int i = 0; i < values.size(); i++){
             new_values.push_back(std::stoi(values[i]));
         }
+        physical_address += (offset * 4);
         std::memcpy(&memory[physical_address], new_values.data(), new_values.size()*4);
     } else if(type == "long"){
+        // TODO: Double
         std::vector<double> new_values;
         for(int i = 0; i < values.size(); i++){
             new_values.push_back(std::stod(values[i]));
         }
+        physical_address += (offset * 8);
         std::memcpy(&memory[physical_address], new_values.data(), new_values.size()*8);
     }
 }
@@ -376,10 +381,13 @@ void printVariable(int pid, std::string name, Mmu *mmu, PageTable *pageTable, ui
 
         for(int i = 0; i < number_of_values; i++){
             if(i > 3){
-                std::cout << "... [" << number_of_values-i << " items]";
+                std::cout << "... [" << number_of_values << " items]";
                 break;
             }
-            std::cout << values[i] << ", ";
+            std::cout << values[i];
+            if(i < number_of_values-1){
+                std::cout << ",";
+            }
         }
     } else if(type == "short"){
         type_size = 2;

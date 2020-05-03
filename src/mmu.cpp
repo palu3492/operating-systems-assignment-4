@@ -111,11 +111,33 @@ void Mmu::print() {
         for (j = 0; j < _processes[i]->variables.size(); j++) {
             std::string name = _processes[i]->variables[j]->name;
             if (name != "<FREE_SPACE>") {
-                std::cout << " " << _processes[i]->pid << " | ";
-                std::cout << std::setw(13) << std::left << name << " | ";
-                // TODO: convert virtual address to hex
-                std::cout << std::setw(12) << std::right << _processes[i]->variables[j]->virtual_address << " | ";
-                std::cout << std::setw(10) << std::right << _processes[i]->variables[j]->size << std::endl;
+                // pid
+                std::cout   << " "
+                            << _processes[i]->pid
+                            << " | ";
+                // name
+                std::cout   << std::left
+                            << std::setw(13)
+                            << name
+                            << " | ";
+                // virtual address
+                std::cout   << std::right
+                            << std::setw(4)
+                            << "0x"
+                            << std::setfill('0')
+                            << std::setw(8)
+                            << std::hex
+                            << _processes[i]->variables[j]->virtual_address
+                            << " | ";
+                // reset to decimal and fill to nothing
+                std::cout   << std::dec
+                            << std::setfill(' ');
+                // size
+                std::cout   << std::right
+                            << std::setw(10)
+                            << _processes[i]->variables[j]->size;
+                // end line
+                std::cout<< std::endl;
             }
         }
     }
