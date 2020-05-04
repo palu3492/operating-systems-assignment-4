@@ -142,6 +142,7 @@ void Mmu::print() {
                             << std::setfill('0')
                             << std::setw(8)
                             << std::hex
+                            << std::uppercase
                             << _processes[i]->variables[j]->virtual_address
                             << " | ";
                 // reset to decimal and fill to nothing

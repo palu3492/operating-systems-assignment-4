@@ -342,7 +342,7 @@ void set(int pid, std::string var_name, int offset, std::vector <std::string> va
         std::vector<char> new_values;
         set_physical_data(physical_address, offset, values, new_values, type, 1, memory);
     } else if(type == "short"){
-        std::vector<short int> new_values;
+        std::vector<short> new_values;
         set_physical_data(physical_address, offset, values, new_values, type, 2, memory);
     } else if(type == "int"){
         std::vector<int> new_values;
@@ -350,7 +350,10 @@ void set(int pid, std::string var_name, int offset, std::vector <std::string> va
     } else if(type == "float"){
         std::vector<float> new_values;
         set_physical_data(physical_address, offset, values, new_values, type, 4, memory);
-    } else if(type == "long" || type == "double"){
+    } else if(type == "long"){
+        std::vector<long> new_values;
+        set_physical_data(physical_address, offset, values, new_values, type, 8, memory);
+    } else if(type == "double"){
         std::vector<double> new_values;
         set_physical_data(physical_address, offset, values, new_values, type, 8, memory);
     }
@@ -367,7 +370,9 @@ void set_physical_data(int physical_address, int offset, std::vector<std::string
             new_values.push_back(std::stoi(values[i]));
         } else if(type == "float"){
             new_values.push_back(std::stof(values[i]));
-        } else if(type == "long" || type == "double"){
+        } else if(type == "long"){
+            new_values.push_back(std::stol(values[i]));
+        } else if(type == "double"){
             new_values.push_back(std::stod(values[i]));
         }
     }
@@ -390,7 +395,7 @@ void printVariable(int pid, std::string name, Mmu *mmu, PageTable *pageTable, ui
         std::vector<char> values;
         print_physical_data(physical_address, size, 1, values, memory);
     } else if(type == "short"){
-        std::vector<short int> values;
+        std::vector<short> values;
         print_physical_data(physical_address, size, 2, values, memory);
     } else if(type == "int"){
         std::vector<int> values;
@@ -398,7 +403,10 @@ void printVariable(int pid, std::string name, Mmu *mmu, PageTable *pageTable, ui
     } else if(type == "float"){
         std::vector<float> values;
         print_physical_data(physical_address, size, 4, values, memory);
-    } else if(type == "long" || type == "double"){
+    } else if(type == "long"){
+        std::vector<long> values;
+        print_physical_data(physical_address, size, 8, values, memory);
+    } else if(type == "double"){
         std::vector<double> values;
         print_physical_data(physical_address, size, 8, values, memory);
     }
@@ -416,7 +424,10 @@ void print_physical_data(int physical_address, int size, int type_size, std::vec
             std::cout << "... [" << number_of_values << " items]";
             break;
         }
-        std::cout << values[i] << ", ";
+        std::cout << values[i];
+        if(i < number_of_values-1){
+            std::cout << ", ";
+        }
     }
 }
 
