@@ -319,11 +319,18 @@ int addVariable(int pid, std::string var_name, int size, std::string type, Mmu *
         int number_of_pages = 1;
         // how much space it takes up on page that it partially fills
         int reverse_offset = page_size - (var_virtual_address % page_size);
+        int size_after_first_page = (size - reverse_offset);
         // number of pages past starting page that it needs to fit whole variable
-        number_of_pages += ((size - reverse_offset) / page_size);
+        if(size_after_first_page > 0){
+            number_of_pages += 1;
+            number_of_pages += size_after_first_page / page_size;
+        }
 
-        for(int i = 0; i <= number_of_pages; i++){
+//        std::cout << "number_of_pages: " << number_of_pages << std::endl;
+
+        for(int i = 0; i < number_of_pages; i++){
             pageTable->addEntry(pid, starting_page + i);
+//            std::cout << "page: " << starting_page + i << std::endl;
         }
     }
 
