@@ -7,6 +7,10 @@
 
 void printStartMessage(int page_size);
 
+void splitCommand(std::string *first, std::string *second);
+
+std::vector <std::string> splitBySpace(std::string data);
+
 void create(int text_size, int data_size, Mmu *mmu, PageTable *pageTable, int page_size);
 
 void allocate(int pid, std::string var_name, std::string data_type, int number_of_elements, Mmu *mmu,
@@ -16,13 +20,15 @@ void set(int pid, std::string var_name, int offset, std::vector <std::string> va
 
 int addVariable(int pid, std::string var_name, int size, std::string type, Mmu *mmu, PageTable *pageTable, int page_size);
 
-void splitCommand(std::string *first, std::string *second);
-
-std::vector <std::string> splitBySpace(std::string data);
-
 void printVariable(int pid, std::string name, Mmu *mmu, PageTable *pageTable, uint8_t *memory);
 
+template<typename T>
+void print_physical_data(int physical_address, int size, int type_size, std::vector<T> values, uint8_t *memory);
+
 void free(int pid, std::string name, Mmu *mmu, PageTable *pageTable, int page_size);
+
+template<typename T>
+void set_physical_data(int physical_address, int offset, std::vector<std::string> values, std::vector<T> new_values, std::string type, int bytes, uint8_t *memory);
 
 /*
 You will not actually be spawning processes that consume memory.
@@ -86,12 +92,9 @@ int main(int argc, char **argv) {
                 std::cout << command << " " << command_data << " is not a valid command." << std::endl;
                 std::cout << command << " " << command_data << " does not have the correct number of arguments."
                           << std::endl;
-
             } else {
                 int text_size = std::stoi(arguments[0]);
                 int data_size = std::stoi(arguments[1]);
-//                std::cout << "text_size: " << text_size << std::endl;
-//                std::cout << "data_size: " << data_size << std::endl;
 
                 create(text_size, data_size, mmu, pageTable, page_size);
                 // create(2048, 1024, mmu, pageTable, page_size);
@@ -117,7 +120,6 @@ int main(int argc, char **argv) {
             if (arguments.size() < 4) {
                 std::cout << command << " " << command_data << " is not a valid command." << std::endl;
                 std::cout << command << " " << command_data << " does not have enough arguments." << std::endl;
-
             } else {
                 int PID = std::stoi(arguments[0]);
                 std::string var_name = arguments[1];
@@ -173,8 +175,35 @@ int main(int argc, char **argv) {
         splitCommand(&command, &command_data);
     }
 
-
     return 0;
+}
+
+// Splits the input command at the first space into a command and its arguments
+void splitCommand(std::string *first, std::string *second) {
+    std::string::size_type pos;
+    pos = first->find(' ', 0);
+    if (pos != std::string::npos) {
+        *second = first->substr(pos + 1);
+        *first = first->substr(0, pos);
+    }
+}
+
+// Splits the input command arguments with a space delimiter
+std::vector <std::string> splitBySpace(std::string data) {
+    std::vector <std::string> result;
+    std::string token = " ";
+    while (data.size()) {
+        int index = data.find(token);
+        if (index != std::string::npos) {
+            result.push_back(data.substr(0, index));
+            data = data.substr(index + token.size());
+            if (data.size() == 0) result.push_back(data);
+        } else {
+            result.push_back(data);
+            data = "";
+        }
+    }
+    return result;
 }
 
 void printStartMessage(int page_size) {
@@ -247,20 +276,21 @@ Allocated memory on the heap (how much depends on the data type and the number o
 Print the virtual memory address
  */
 void allocate(int pid, std::string var_name, std::string data_type, int number_of_elements, Mmu *mmu, PageTable *pageTable, int page_size) {
-    int number_of_bytes = number_of_elements;
-    // If 'char' then do nothing, else multiply by number of bytes for each data type
-    if (data_type == "short") {
-        number_of_bytes *= 2;
-    } else if (data_type == "int") {
-        number_of_bytes *= 4;
-    } else if (data_type == "long") {
-        number_of_bytes *= 8;
-    } else if (data_type != "char") {
-        // If data_type is not 'short', 'int', 'long', or 'char' print error
+
+    std::map<std::string, int> data_type_map = {
+            {"char", 1},
+            {"short", 2},
+            {"int", 4},
+            {"long", 8}
+    };
+
+    if(data_type_map.count(data_type) == 0){
         std::cout << data_type << " is not a valid data_type." << std::endl;
         return;
     }
-    // std::cout << "number of bytes: " << number_of_bytes << std::endl;
+
+    int number_of_bytes = number_of_elements;
+    number_of_bytes *= data_type_map[data_type];
 
     int var_virtual_address = addVariable(pid, var_name, number_of_bytes, data_type, mmu, pageTable, page_size);
     std::cout << var_virtual_address << std::endl;
@@ -274,16 +304,13 @@ int addVariable(int pid, std::string var_name, int size, std::string type, Mmu *
 
     // Add pages needed to store variable
     int starting_page = var_virtual_address / page_size;
-    if(starting_page < 0){
-        starting_page = 0;
-    }
+    // will always be on 1 page
+    int number_of_pages = 1;
     // how much space it takes up on page that it partially fills
     int reverse_offset = page_size - (var_virtual_address % page_size);
     // number of pages past starting page that it needs to fit whole variable
-    int number_of_pages = ((size - reverse_offset) / page_size) + 1;
-//    std::cout << starting_page <<std::endl;
-//    std::cout << reverse_offset <<std::endl;
-//    std::cout << number_of_pages <<std::endl;
+    number_of_pages += ((size - reverse_offset) / page_size);
+
     for(int i = 0; i <= number_of_pages; i++){
         pageTable->addEntry(pid, starting_page + i);
     }
@@ -301,64 +328,35 @@ void set(int pid, std::string var_name, int offset, std::vector <std::string> va
 
     if(type == "char"){
         std::vector<char> new_values;
-        for(int i = 0; i < values.size(); i++){
-            new_values.push_back(values[i].at(0));
-        }
-        physical_address += (offset * 1);
-        std::memcpy(&memory[physical_address], new_values.data(), new_values.size());
+        set_physical_data(physical_address, offset, values, new_values, type, 1, memory);
     } else if(type == "short"){
         std::vector<short> new_values;
-        for(int i = 0; i < values.size(); i++){
-            new_values.push_back(std::stod(values[i]));
-        }
-        physical_address += (offset * 2);
-        std::memcpy(&memory[physical_address], new_values.data(), new_values.size()*2);
+        set_physical_data(physical_address, offset, values, new_values, type, 2, memory);
     } else if(type == "int"){
         std::vector<int> new_values;
-        for(int i = 0; i < values.size(); i++){
-            new_values.push_back(std::stoi(values[i]));
-        }
-        physical_address += (offset * 4);
-        std::memcpy(&memory[physical_address], new_values.data(), new_values.size()*4);
+        set_physical_data(physical_address, offset, values, new_values, type, 4, memory);
     } else if(type == "long"){
         // TODO: Double
         std::vector<double> new_values;
-        for(int i = 0; i < values.size(); i++){
+        set_physical_data(physical_address, offset, values, new_values, type, 8, memory);
+    }
+}
+
+template<typename T>
+void set_physical_data(int physical_address, int offset, std::vector<std::string> values, std::vector<T> new_values, std::string type, int bytes, uint8_t *memory){
+    for(int i = 0; i < values.size(); i++){
+        if(type == "char"){
+            new_values.push_back(values[i].at(0));
+        } else if(type == "short"){
+            new_values.push_back(std::stod(values[i]));
+        } else if(type == "int"){
+            new_values.push_back(std::stoi(values[i]));
+        } else if(type == "long"){
             new_values.push_back(std::stod(values[i]));
         }
-        physical_address += (offset * 8);
-        std::memcpy(&memory[physical_address], new_values.data(), new_values.size()*8);
     }
-}
-
-//Splits the input command at the first space into a command and its arguments 
-void splitCommand(std::string *first, std::string *second) {
-    std::string::size_type pos;
-    pos = first->find(' ', 0);
-    if (pos != std::string::npos) {
-        *second = first->substr(pos + 1);
-        *first = first->substr(0, pos);
-    }
-//    std::cout << "Command: " << *first << std::endl;
-//    std::cout << "Command Data: " << *second << std::endl;
-}
-
-//Splits the input command arguments with a space delimiter
-std::vector <std::string> splitBySpace(std::string data) {
-    std::vector <std::string> result;
-    std::string token = " ";
-    while (data.size()) {
-        int index = data.find(token);
-        if (index != std::string::npos) {
-            result.push_back(data.substr(0, index));
-            data = data.substr(index + token.size());
-            if (data.size() == 0)result.push_back(data);
-        } else {
-            result.push_back(data);
-            data = "";
-        }
-    }
-    return result;
+    physical_address += (offset * bytes);
+    std::memcpy(&memory[physical_address], new_values.data(), new_values.size() * bytes);
 }
 
 void printVariable(int pid, std::string name, Mmu *mmu, PageTable *pageTable, uint8_t *memory){
@@ -372,66 +370,35 @@ void printVariable(int pid, std::string name, Mmu *mmu, PageTable *pageTable, ui
 
     std::string type = variable->type;
 
-    int type_size = 1;
-    int number_of_values;
     if(type == "char") {
-        number_of_values = size / type_size;
-        char values[number_of_values];
-        std::memcpy(values, &memory[physical_address], size);
-
-        for(int i = 0; i < number_of_values; i++){
-            if(i > 3){
-                std::cout << "... [" << number_of_values << " items]";
-                break;
-            }
-            std::cout << values[i];
-            if(i < number_of_values-1){
-                std::cout << ",";
-            }
-        }
+        std::vector<char> values;
+        print_physical_data(physical_address, size, 1, values, memory);
     } else if(type == "short"){
-        type_size = 2;
-        number_of_values = size / type_size;
-        short values[number_of_values];
-        std::memcpy(values, &memory[physical_address], size);
-
-        for(int i = 0; i < number_of_values; i++){
-            if(i > 3){
-                std::cout << "... [" << number_of_values-i << " items]";
-                break;
-            }
-            std::cout << values[i] << ", ";
-        }
+        std::vector<short> values;
+        print_physical_data(physical_address, size, 2, values, memory);
     } else if(type == "int"){
-        type_size = 4;
-        number_of_values = size / type_size;
-        int values[number_of_values];
-        std::memcpy(values, &memory[physical_address], size);
-
-        for(int i = 0; i < number_of_values; i++){
-            if(i > 3){
-                std::cout << "... [" << number_of_values-i << " items]";
-                break;
-            }
-            std::cout << values[i] << ", ";
-        }
+        std::vector<int> values;
+        print_physical_data(physical_address, size, 4, values, memory);
     } else if(type == "long"){
-        // TODO: problem printing longs, maybe problem setting them
-        type_size = 8;
-        number_of_values = size / type_size;
-        long values[number_of_values];
-        std::memcpy(values, &memory[physical_address], size);
-
-        for(int i = 0; i < number_of_values; i++){
-            if(i > 3){
-                std::cout << "... [" << number_of_values-i << " items]";
-                break;
-            }
-            std::cout << values[i] << ", ";
-        }
+        std::vector<double> values;
+        print_physical_data(physical_address, size, 8, values, memory);
     }
     std::cout << std::endl;
+}
 
+template<typename T>
+void print_physical_data(int physical_address, int size, int type_size, std::vector<T> values, uint8_t *memory){
+    int number_of_values = size / type_size;
+    values.resize(number_of_values);
+    std::memcpy(&values[0], &memory[physical_address], size);
+
+    for(int i = 0; i < number_of_values; i++){
+        if(i > 3){
+            std::cout << "... [" << number_of_values << " items]";
+            break;
+        }
+        std::cout << values[i] << ", ";
+    }
 }
 
 void free(int pid, std::string name, Mmu *mmu, PageTable *pageTable, int page_size){
