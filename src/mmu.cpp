@@ -24,7 +24,25 @@ uint32_t Mmu::createProcess() {
     _processes.push_back(newProcess); // Push process onto back of processes Vector
 
     _next_pid++; // increment pid for next process
+    
+    std::cout << "Processes: " << std::endl;
+    for (int i = 0; i < _processes.size(); i++) {
+        std::cout << _processes[i]->pid << std::endl;
+    }
     return newProcess->pid;
+}
+
+void Mmu::terminateProcess(int term_pid) {
+    std::cout << "Processes: " << std::endl;
+    for (int i = 0; i < _processes.size(); i++) {
+        if(_processes[i]->pid == term_pid){
+            _processes.erase(_processes.begin() + i);
+            break;
+        } 
+        for (int i = 0; i < _processes.size(); i++) {
+            std::cout << _processes[i]->pid << std::endl;
+        }
+    }
 }
 
 Process *Mmu::getProcess(int pid) {

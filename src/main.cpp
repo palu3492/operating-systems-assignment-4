@@ -30,6 +30,8 @@ void free(int pid, std::string name, Mmu *mmu, PageTable *pageTable, int page_si
 template<typename T>
 void set_physical_data(int physical_address, int offset, std::vector<std::string> values, std::vector<T> new_values, std::string type, int bytes, uint8_t *memory);
 
+void terminate(int pid, Mmu *mmu, PageTable *pageTable, int page_size);
+
 /*
 You will not actually be spawning processes that consume memory.
 Rather you will be creating simulated "processes" that each make
@@ -162,7 +164,15 @@ int main(int argc, char **argv) {
                 free(pid, var_name, mmu, pageTable, page_size);
             }
         } else if (command == "terminate") {
-            
+            if (arguments.size() != 1) {
+                std::cout << command << " " << command_data << " is not a valid command." << std::endl;
+                std::cout << command << " " << command_data << " does not have enough arguments." << std::endl;
+
+            } else {
+                int pid = std::stoi(arguments[0]);
+
+                terminate(pid, mmu, pageTable, page_size);
+            }
         } else {
             std::cout << command << " is not a valid command." << std::endl;
         }
@@ -281,7 +291,9 @@ void allocate(int pid, std::string var_name, std::string data_type, int number_o
             {"char", 1},
             {"short", 2},
             {"int", 4},
+            {"float", 4},
             {"long", 8}
+            {"double", 8}
     };
 
     if(data_type_map.count(data_type) == 0){
@@ -332,11 +344,11 @@ void set(int pid, std::string var_name, int offset, std::vector <std::string> va
     } else if(type == "short"){
         std::vector<short> new_values;
         set_physical_data(physical_address, offset, values, new_values, type, 2, memory);
-    } else if(type == "int"){
+    } else if(type == "int" || type == "float"){
+        // TODO: float handled differently?
         std::vector<int> new_values;
         set_physical_data(physical_address, offset, values, new_values, type, 4, memory);
-    } else if(type == "long"){
-        // TODO: Double
+    } else if(type == "long" || type == "double"){
         std::vector<double> new_values;
         set_physical_data(physical_address, offset, values, new_values, type, 8, memory);
     }
@@ -376,10 +388,10 @@ void printVariable(int pid, std::string name, Mmu *mmu, PageTable *pageTable, ui
     } else if(type == "short"){
         std::vector<short> values;
         print_physical_data(physical_address, size, 2, values, memory);
-    } else if(type == "int"){
+    } else if(type == "int" || type == "float"){
         std::vector<int> values;
         print_physical_data(physical_address, size, 4, values, memory);
-    } else if(type == "long"){
+    } else if(type == "long" || type == "double"){
         std::vector<double> values;
         print_physical_data(physical_address, size, 8, values, memory);
     }
@@ -450,4 +462,11 @@ void free(int pid, std::string name, Mmu *mmu, PageTable *pageTable, int page_si
 
     // find all free space and join if possible
     mmu->joinFreeSpace(pid);
+}
+
+void terminate(int pid, Mmu *mmu, PageTable *pageTable, int page_size){
+
+    mmu->terminateProcess(pid);
+    pageTable->removeProcess(pid);
+
 }

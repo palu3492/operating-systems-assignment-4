@@ -50,6 +50,8 @@ public:
     Variable *getVariableFromProcess(int pid, std::string name);
 
     void joinFreeSpace(int pid);
+    
+    void terminateProcess(int term_pid);
 };
 
 #endif // __MMU_H_
