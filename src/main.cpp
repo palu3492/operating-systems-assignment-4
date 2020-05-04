@@ -292,7 +292,7 @@ void allocate(int pid, std::string var_name, std::string data_type, int number_o
             {"short", 2},
             {"int", 4},
             {"float", 4},
-            {"long", 8}
+            {"long", 8},
             {"double", 8}
     };
 
