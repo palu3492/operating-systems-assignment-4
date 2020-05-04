@@ -24,6 +24,8 @@ void printVariable(int pid, std::string name, Mmu *mmu, PageTable *pageTable, ui
 
 void free(int pid, std::string name, Mmu *mmu, PageTable *pageTable, int page_size);
 
+void terminate(int pid, Mmu *mmu, PageTable *pageTable, int page_size);
+
 /*
 You will not actually be spawning processes that consume memory.
 Rather you will be creating simulated "processes" that each make
@@ -160,7 +162,15 @@ int main(int argc, char **argv) {
                 free(pid, var_name, mmu, pageTable, page_size);
             }
         } else if (command == "terminate") {
-            
+            if (arguments.size() != 1) {
+                std::cout << command << " " << command_data << " is not a valid command." << std::endl;
+                std::cout << command << " " << command_data << " does not have enough arguments." << std::endl;
+
+            } else {
+                int pid = std::stoi(arguments[0]);
+                
+                terminate(pid, mmu, pageTable, page_size);
+            }
         } else {
             std::cout << command << " is not a valid command." << std::endl;
         }
@@ -483,4 +493,11 @@ void free(int pid, std::string name, Mmu *mmu, PageTable *pageTable, int page_si
 
     // find all free space and join if possible
     mmu->joinFreeSpace(pid);
+}
+
+void terminate(int pid, Mmu *mmu, PageTable *pageTable, int page_size){
+
+    mmu->terminateProcess(pid);
+    pageTable->removeProcess(pid);
+
 }

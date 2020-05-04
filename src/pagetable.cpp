@@ -50,6 +50,12 @@ void PageTable::removeEntry(uint32_t pid, int page_number) {
     }
 }
 
+void PageTable::removeProcess(uint32_t pid) {
+    for(int i = 0; i < _frames.size(); i++){
+        removeEntry(pid, i);
+    }
+}
+
 int PageTable::getPhysicalAddress(uint32_t pid, int virtual_address) {
     // Convert virtual address to page_number and page_offset
 
