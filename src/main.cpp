@@ -251,9 +251,9 @@ void allocate(int pid, std::string var_name, std::string data_type, int number_o
     // If 'char' then do nothing, else multiply by number of bytes for each data type
     if (data_type == "short") {
         number_of_bytes *= 2;
-    } else if (data_type == "int") {
+    } else if (data_type == "int" || data_type == "float") {
         number_of_bytes *= 4;
-    } else if (data_type == "long") {
+    } else if (data_type == "long" || data_type == "double") {
         number_of_bytes *= 8;
     } else if (data_type != "char") {
         // If data_type is not 'short', 'int', 'long', or 'char' print error
@@ -313,14 +313,14 @@ void set(int pid, std::string var_name, int offset, std::vector <std::string> va
         }
         physical_address += (offset * 2);
         std::memcpy(&memory[physical_address], new_values.data(), new_values.size()*2);
-    } else if(type == "int"){
+    } else if(type == "int" || type == "float"){
         std::vector<int> new_values;
         for(int i = 0; i < values.size(); i++){
             new_values.push_back(std::stoi(values[i]));
         }
         physical_address += (offset * 4);
         std::memcpy(&memory[physical_address], new_values.data(), new_values.size()*4);
-    } else if(type == "long"){
+    } else if(type == "long" || type == "double"){
         // TODO: Double
         std::vector<double> new_values;
         for(int i = 0; i < values.size(); i++){
@@ -402,7 +402,7 @@ void printVariable(int pid, std::string name, Mmu *mmu, PageTable *pageTable, ui
             }
             std::cout << values[i] << ", ";
         }
-    } else if(type == "int"){
+    } else if(type == "int" || type == "float"){
         type_size = 4;
         number_of_values = size / type_size;
         int values[number_of_values];
@@ -415,7 +415,7 @@ void printVariable(int pid, std::string name, Mmu *mmu, PageTable *pageTable, ui
             }
             std::cout << values[i] << ", ";
         }
-    } else if(type == "long"){
+    } else if(type == "long" || type == "double"){
         // TODO: problem printing longs, maybe problem setting them
         type_size = 8;
         number_of_values = size / type_size;
