@@ -48,14 +48,21 @@ Process *Mmu::getProcess(int pid) {
 int Mmu::addVariableToProcess(int pid, std::string name, int size, std::string type) {
     Process* process = getProcess(pid);
 
-    Variable *var;
     int virtual_address = calculateVirtualAddress(process, size);
     if(virtual_address == -1){
         return virtual_address;
     }
-    var = createVariable(name, virtual_address, size, type);
+    Variable *new_var = createVariable(name, virtual_address, size, type);
 
-    process->variables.push_back(var);
+    // take free space off back
+    Variable *free_space_var = process->variables[process->variables.size() - 1];
+    process->variables.pop_back();
+
+    // add new variable to variables vector
+    process->variables.push_back(new_var);
+
+    // add free space back on
+    process->variables.push_back(free_space_var);
 
     return virtual_address;
 }
@@ -101,18 +108,19 @@ Variable *Mmu::getVariableFromProcess(int pid, std::string name){
 
 void Mmu::joinFreeSpace(int pid){
     Process *process = getProcess(pid);
-    std::vector<Variable*> variables = process->variables;
-    Variable* prev_free_space_var;
-    for (int i = 0; i < variables.size(); i++) {
-        if (variables[i]->name == "<FREE_SPACE>") {
-            if(prev_free_space_var){
-                prev_free_space_var->size += variables[i]->size;
-                variables[i]->size = 0;
+    int prev_free_space_index = -1;
+    for (int i = 0; i < process->variables.size(); i++) {
+        if (process->variables[i]->name == "<FREE_SPACE>") {
+            if(prev_free_space_index != -1){
+                process->variables[prev_free_space_index]->size += process->variables[i]->size;
+                // remove absorbed free space variable
+                process->variables.erase(process->variables.begin() + i);
+                i--;
             } else {
-                prev_free_space_var = variables[i];
+                prev_free_space_index = i;
             }
         } else {
-            prev_free_space_var = NULL;
+            prev_free_space_index = -1;
         }
     }
 }
@@ -125,7 +133,7 @@ void Mmu::print() {
     for (i = 0; i < _processes.size(); i++) {
         for (j = 0; j < _processes[i]->variables.size(); j++) {
             std::string name = _processes[i]->variables[j]->name;
-            if (name != "<FREE_SPACE>") {
+            if (name != "<FREE_SPACE>" || true) {
                 // pid
                 std::cout   << " "
                             << _processes[i]->pid

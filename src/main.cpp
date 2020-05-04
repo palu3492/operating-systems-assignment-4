@@ -326,11 +326,8 @@ int addVariable(int pid, std::string var_name, int size, std::string type, Mmu *
             number_of_pages += size_after_first_page / page_size;
         }
 
-//        std::cout << "number_of_pages: " << number_of_pages << std::endl;
-
         for(int i = 0; i < number_of_pages; i++){
             pageTable->addEntry(pid, starting_page + i);
-//            std::cout << "page: " << starting_page + i << std::endl;
         }
     }
 
