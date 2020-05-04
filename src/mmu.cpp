@@ -133,7 +133,7 @@ void Mmu::print() {
     for (i = 0; i < _processes.size(); i++) {
         for (j = 0; j < _processes[i]->variables.size(); j++) {
             std::string name = _processes[i]->variables[j]->name;
-            if (name != "<FREE_SPACE>" || true) {
+            if (name != "<FREE_SPACE>") {
                 // pid
                 std::cout   << " "
                             << _processes[i]->pid
