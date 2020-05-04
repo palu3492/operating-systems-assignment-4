@@ -28,8 +28,6 @@ private:
 
     int calculateVirtualAddress(Process* process, int size);
 
-//    Variable* findLastFreeSpaceVar(std::vector<Variable *> variables);
-
 public:
     Mmu(int memory_size);
 

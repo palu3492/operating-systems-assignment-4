@@ -305,7 +305,13 @@ void allocate(int pid, std::string var_name, std::string data_type, int number_o
     number_of_bytes *= data_type_map[data_type];
 
     int var_virtual_address = addVariable(pid, var_name, number_of_bytes, data_type, mmu, pageTable, page_size);
-    std::cout << var_virtual_address << std::endl;
+    // if can't fit in memory then error
+    if(var_virtual_address == -1) {
+        std::cout << "Allocation would exceed system memory. No allocation performed." << std::endl;
+    } else {
+        // print virtual address
+        std::cout << var_virtual_address << std::endl;
+    }
 }
 
 int addVariable(int pid, std::string var_name, int size, std::string type, Mmu *mmu, PageTable *pageTable, int page_size) {
@@ -313,18 +319,20 @@ int addVariable(int pid, std::string var_name, int size, std::string type, Mmu *
 
     // Add variable to process
     int var_virtual_address = mmu->addVariableToProcess(pid, var_name, size, type);
+    // Allocation would exceed system memory. No allocation performed.
+    if(var_virtual_address != -1){
+        // Add pages needed to store variable
+        int starting_page = var_virtual_address / page_size;
+        // will always be on 1 page
+        int number_of_pages = 1;
+        // how much space it takes up on page that it partially fills
+        int reverse_offset = page_size - (var_virtual_address % page_size);
+        // number of pages past starting page that it needs to fit whole variable
+        number_of_pages += ((size - reverse_offset) / page_size);
 
-    // Add pages needed to store variable
-    int starting_page = var_virtual_address / page_size;
-    // will always be on 1 page
-    int number_of_pages = 1;
-    // how much space it takes up on page that it partially fills
-    int reverse_offset = page_size - (var_virtual_address % page_size);
-    // number of pages past starting page that it needs to fit whole variable
-    number_of_pages += ((size - reverse_offset) / page_size);
-
-    for(int i = 0; i <= number_of_pages; i++){
-        pageTable->addEntry(pid, starting_page + i);
+        for(int i = 0; i <= number_of_pages; i++){
+            pageTable->addEntry(pid, starting_page + i);
+        }
     }
 
     return var_virtual_address;
@@ -342,11 +350,13 @@ void set(int pid, std::string var_name, int offset, std::vector <std::string> va
         std::vector<char> new_values;
         set_physical_data(physical_address, offset, values, new_values, type, 1, memory);
     } else if(type == "short"){
-        std::vector<short> new_values;
+        std::vector<short int> new_values;
         set_physical_data(physical_address, offset, values, new_values, type, 2, memory);
-    } else if(type == "int" || type == "float"){
-        // TODO: float handled differently?
+    } else if(type == "int"){
         std::vector<int> new_values;
+        set_physical_data(physical_address, offset, values, new_values, type, 4, memory);
+    } else if(type == "float"){
+        std::vector<float> new_values;
         set_physical_data(physical_address, offset, values, new_values, type, 4, memory);
     } else if(type == "long" || type == "double"){
         std::vector<double> new_values;
@@ -360,10 +370,12 @@ void set_physical_data(int physical_address, int offset, std::vector<std::string
         if(type == "char"){
             new_values.push_back(values[i].at(0));
         } else if(type == "short"){
-            new_values.push_back(std::stod(values[i]));
+            new_values.push_back(std::stoi(values[i]));
         } else if(type == "int"){
             new_values.push_back(std::stoi(values[i]));
-        } else if(type == "long"){
+        } else if(type == "float"){
+            new_values.push_back(std::stof(values[i]));
+        } else if(type == "long" || type == "double"){
             new_values.push_back(std::stod(values[i]));
         }
     }
@@ -386,10 +398,13 @@ void printVariable(int pid, std::string name, Mmu *mmu, PageTable *pageTable, ui
         std::vector<char> values;
         print_physical_data(physical_address, size, 1, values, memory);
     } else if(type == "short"){
-        std::vector<short> values;
+        std::vector<short int> values;
         print_physical_data(physical_address, size, 2, values, memory);
-    } else if(type == "int" || type == "float"){
+    } else if(type == "int"){
         std::vector<int> values;
+        print_physical_data(physical_address, size, 4, values, memory);
+    } else if(type == "float"){
+        std::vector<float> values;
         print_physical_data(physical_address, size, 4, values, memory);
     } else if(type == "long" || type == "double"){
         std::vector<double> values;
@@ -425,9 +440,10 @@ void free(int pid, std::string name, Mmu *mmu, PageTable *pageTable, int page_si
     int last_page_number = (virtual_address + size) / page_size;
 
     // remove table entries and frames
+    // only remove pages between first and last pages
     for(int page = first_page_number+1; page < last_page_number; page++){
         pageTable->removeEntry(pid, page);
-        std::cout << "remove " << page << std::endl;
+        // std::cout << "remove " << page << std::endl;
     }
 
     // remove first and last pages if there are no other variables on those pages
@@ -441,23 +457,24 @@ void free(int pid, std::string name, Mmu *mmu, PageTable *pageTable, int page_si
         if(variables[i]->name != "<FREE_SPACE>") {
             int virtual_address = variables[i]->virtual_address;
             int size = variables[i]->size;
-            int first_page = virtual_address / page_size;
-            int last_page = (virtual_address + size) / page_size;
-            if (first_page == first_page_number || last_page == first_page_number) {
+            // first and last pages that this free space variable is on
+            int starting_page = virtual_address / page_size;
+            int ending_page = (virtual_address + size) / page_size;
+            // checks if there is a variable on first or last page of newly freed variable
+            if (starting_page == first_page_number || ending_page == first_page_number) {
                 first_has_variables = true;
             }
-            if (first_page == last_page_number || last_page == last_page_number) {
+            if (starting_page == last_page_number || ending_page == last_page_number) {
                 last_has_variables = true;
             }
         }
     }
+    // Remove table entry if there are no variables on that page
     if(!first_has_variables){
         pageTable->removeEntry(pid, first_page_number);
-//        std::cout << "remove first " << first_page_number << std::endl;
     }
     if(!last_has_variables){
         pageTable->removeEntry(pid, last_page_number);
-//        std::cout << "remove last " << last_page_number << std::endl;
     }
 
     // find all free space and join if possible
@@ -465,8 +482,6 @@ void free(int pid, std::string name, Mmu *mmu, PageTable *pageTable, int page_si
 }
 
 void terminate(int pid, Mmu *mmu, PageTable *pageTable, int page_size){
-
     mmu->terminateProcess(pid);
     pageTable->removeProcess(pid);
-
 }

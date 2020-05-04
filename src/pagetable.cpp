@@ -38,14 +38,17 @@ void PageTable::addEntry(uint32_t pid, int page_number) {
 
 void PageTable::removeEntry(uint32_t pid, int page_number) {
     std::string entry = std::to_string(pid) + "|" + std::to_string(page_number);
-    int frame = _table[entry];
-    // remove entry
-    _table.erase(entry);
-    // remove frame
-    for(int i = 0; i < _frames.size(); i++){
-        if(_frames[i] == frame){
-            _frames.erase(_frames.begin() + i);
-            break;
+    // if entry exists
+    if(_table.count(entry) > 0){
+        int frame = _table[entry];
+        // remove entry
+        _table.erase(entry);
+        // remove frame
+        for(int i = 0; i < _frames.size(); i++){
+            if(_frames[i] == frame){
+                _frames.erase(_frames.begin() + i);
+                break;
+            }
         }
     }
 }

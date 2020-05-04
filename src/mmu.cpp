@@ -24,23 +24,15 @@ uint32_t Mmu::createProcess() {
     _processes.push_back(newProcess); // Push process onto back of processes Vector
 
     _next_pid++; // increment pid for next process
-    
-    std::cout << "Processes: " << std::endl;
-    for (int i = 0; i < _processes.size(); i++) {
-        std::cout << _processes[i]->pid << std::endl;
-    }
+
     return newProcess->pid;
 }
 
 void Mmu::terminateProcess(int term_pid) {
-    std::cout << "Processes: " << std::endl;
     for (int i = 0; i < _processes.size(); i++) {
         if(_processes[i]->pid == term_pid){
             _processes.erase(_processes.begin() + i);
             break;
-        } 
-        for (int i = 0; i < _processes.size(); i++) {
-            std::cout << _processes[i]->pid << std::endl;
         }
     }
 }
@@ -58,6 +50,9 @@ int Mmu::addVariableToProcess(int pid, std::string name, int size, std::string t
 
     Variable *var;
     int virtual_address = calculateVirtualAddress(process, size);
+    if(virtual_address == -1){
+        return virtual_address;
+    }
     var = createVariable(name, virtual_address, size, type);
 
     process->variables.push_back(var);
@@ -81,6 +76,8 @@ int Mmu::calculateVirtualAddress(Process* process, int size){
             }
         }
     }
+    // if no free space to put variable then return -1, meaning it would exceed system memory
+    return -1;
 }
 
 Variable *Mmu::createVariable(std::string name, int address, int size, std::string type) {
@@ -106,7 +103,7 @@ Variable *Mmu::getVariableFromProcess(int pid, std::string name){
 void Mmu::joinFreeSpace(int pid){
     Process *process = getProcess(pid);
     std::vector<Variable*> variables = process->variables;
-    Variable* prev_free_space_var = NULL;
+    Variable* prev_free_space_var;
     for (int i = 0; i < variables.size(); i++) {
         if (variables[i]->name == "<FREE_SPACE>") {
             if(prev_free_space_var){
@@ -116,6 +113,8 @@ void Mmu::joinFreeSpace(int pid){
             } else {
                 prev_free_space_var = variables[i];
             }
+        } else {
+            prev_free_space_var = NULL;
         }
     }
 }
