@@ -9,7 +9,7 @@ void printStartMessage(int page_size);
 
 void splitCommand(std::string *first, std::string *second);
 
-std::vector <std::string> splitBySpace(std::string data);
+std::vector <std::string> splitByDelimiter(std::string data, std::string token);
 
 void create(int text_size, int data_size, Mmu *mmu, PageTable *pageTable, int page_size);
 
@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
     std::cout << "> ";
     std::getline(std::cin, command); // get line typed and store as command
 
-    //Holds everything after the first space
+    // Holds everything after the first space
     std::string command_data;
     // Parse command into command and its arguments
     splitCommand(&command, &command_data);
@@ -85,7 +85,7 @@ int main(int argc, char **argv) {
     // while the user doesn't type 'exit' command, keep asking for commands
     while (command != "exit") {
 
-        arguments = splitBySpace(command_data);
+        arguments = splitByDelimiter(command_data, " ");
 
         // Each command is handled in its own function
         if (command == "create") {
@@ -99,7 +99,6 @@ int main(int argc, char **argv) {
                 int data_size = std::stoi(arguments[1]);
 
                 create(text_size, data_size, mmu, pageTable, page_size);
-                // create(2048, 1024, mmu, pageTable, page_size);
             }
         } else if (command == "allocate") {
             // allocate <PID> <var_name> <data_type> <number_of_elements>
@@ -107,14 +106,13 @@ int main(int argc, char **argv) {
                 std::cout << command << " " << command_data << " is not a valid command." << std::endl;
                 std::cout << command << " " << command_data << " does not have the correct number of arguments."
                           << std::endl;
-
             } else {
-                int PID = std::stoi(arguments[0]);
+                int pid = std::stoi(arguments[0]);
                 std::string var_name = arguments[1];
                 std::string data_type = arguments[2];
                 int number_of_elements = std::stoi(arguments[3]);
 
-                allocate(PID, var_name, data_type, number_of_elements, mmu, pageTable, page_size);
+                allocate(pid, var_name, data_type, number_of_elements, mmu, pageTable, page_size);
                 // allocate(1024, "var1", "int", 10, mmu, pageTable, page_size);
             }
         } else if (command == "set") {
@@ -123,7 +121,7 @@ int main(int argc, char **argv) {
                 std::cout << command << " " << command_data << " is not a valid command." << std::endl;
                 std::cout << command << " " << command_data << " does not have enough arguments." << std::endl;
             } else {
-                int PID = std::stoi(arguments[0]);
+                int pid = std::stoi(arguments[0]);
                 std::string var_name = arguments[1];
                 int offset = std::stoi(arguments[2]);
                 std::vector <std::string> values;
@@ -132,7 +130,7 @@ int main(int argc, char **argv) {
                     values.push_back(arguments[i]);
                 }
 
-                set(PID, var_name, offset, values, mmu, pageTable, page_size, memory);
+                set(pid, var_name, offset, values, mmu, pageTable, page_size, memory);
                 // set(1024, "var1", 0, values, mmu, pageTable, page_size, memory);
             }
         } else if (command == "print") {
@@ -143,21 +141,17 @@ int main(int argc, char **argv) {
             } else if (command_data == "processes") {
                 mmu->printProcesses();
             } else {
+                arguments = splitByDelimiter(command_data, ":");
                 int pid = std::stoi(arguments[0]);
                 std::string var_name = arguments[1];
-
                 printVariable(pid, var_name, mmu, pageTable, memory);
-
                 // <PID>:<var_name>
-
             }
         } else if (command == "free") {
             // free <PID> <var_name>
-
             if (arguments.size() != 2) {
                 std::cout << command << " " << command_data << " is not a valid command." << std::endl;
                 std::cout << command << " " << command_data << " does not have enough arguments." << std::endl;
-
             } else {
                 int pid = std::stoi(arguments[0]);
                 std::string var_name = arguments[1];
@@ -170,7 +164,6 @@ int main(int argc, char **argv) {
 
             } else {
                 int pid = std::stoi(arguments[0]);
-
                 terminate(pid, mmu, pageTable, page_size);
             }
         } else {
@@ -199,9 +192,8 @@ void splitCommand(std::string *first, std::string *second) {
 }
 
 // Splits the input command arguments with a space delimiter
-std::vector <std::string> splitBySpace(std::string data) {
+std::vector <std::string> splitByDelimiter(std::string data, std::string token) {
     std::vector <std::string> result;
-    std::string token = " ";
     while (data.size()) {
         int index = data.find(token);
         if (index != std::string::npos) {

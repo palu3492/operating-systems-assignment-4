@@ -70,7 +70,6 @@ int Mmu::calculateVirtualAddress(Process* process, int size){
                 // change free space address
                 variables[i]->virtual_address += size;
                 // update free space size
-                // TODO: remove variable if size == 0
                 variables[i]->size -= size;
                 return virtual_address;
             }
@@ -108,7 +107,6 @@ void Mmu::joinFreeSpace(int pid){
         if (variables[i]->name == "<FREE_SPACE>") {
             if(prev_free_space_var){
                 prev_free_space_var->size += variables[i]->size;
-                // TODO: remove this variable instead of setting size to zero
                 variables[i]->size = 0;
             } else {
                 prev_free_space_var = variables[i];
